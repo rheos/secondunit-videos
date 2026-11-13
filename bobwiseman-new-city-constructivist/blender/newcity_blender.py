@@ -23,7 +23,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(HERE)
 OUT = os.path.join(PROJ, "out", "blender")
 FPS = 24
-FULL = "--full" in sys.argv          # the whole song (blender/song.py); without it, the 19.5 s look test
+FULL = "--full" in sys.argv
+V3 = "--v3" in sys.argv               # recipe v3 (blender/v3.py): open paper, type as design, deeper focus, light pool          # the whole song (blender/song.py); without it, the 19.5 s look test
 F_LAST = 5637 if FULL else 467        # song frames: 0..5637 = the whole 3:54.9 song; 0..467 = 0:00.0-0:19.5
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 def opt(name, default=None):
@@ -258,6 +259,13 @@ def ink(name, hi, mid, lo, t1=-0.05, t2=0.45, rough=0.12):
 
 FLAT = {k: flat(k) for k in ("cream", "red", "black", "motif")}
 
+def add_bar(m, key="black", pad=.35):
+    """v3: reverse a word out of a label bar, built into the word's own mesh so it pops and hides with it"""
+    me = m.data; bm = bmesh.new(); bm.from_mesh(me); W = m["width"]; dz = -.015 / max(1e-6, m.scale.z)   # .015 world units under the type
+    vs = [bm.verts.new(p) for p in ((-W / 2 - pad, -pad, dz), (W / 2 + pad, -pad, dz), (W / 2 + pad, 1 + pad, dz), (-W / 2 - pad, 1 + pad, dz))]
+    f = bm.faces.new(vs); me.materials.append(FLAT[key]); f.material_index = len(me.materials) - 1
+    bm.to_mesh(me); bm.free(); return m
+
 # ---------------------------------------------------------------------------------------------------------------
 # keys: every animated value is sampled from the story at these times and written as linear keys
 KEYS = {}                       # (datablock, path, index) -> [(frame, value)]
@@ -362,6 +370,7 @@ def camera(pos, at, roll, fov, focus, aperture):
     rec(CAM, "location", pos); rec(CAM, "rotation_euler", e)
     tanh = math.tan(math.radians(fov) / 2); lens = 12.0 / tanh
     rec(cd, "lens", lens); rec(cd, "dof.focus_distance", focus)
+    if V3: aperture *= 1.7
     rec(cd, "dof.aperture_fstop", (lens / 1000) / (2 * aperture * tanh) if aperture > 0 else 1000.0)
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -406,13 +415,20 @@ def shot_a():
             a.location.x = -tot / 2 + wa / 2; b.location.x = tot / 2 - wb / 2
     for m in words: m["base"] = tuple(m.scale)
     objs += [m for m in words]
-    objs.append(rows_of_buildings("A_rows", on_cream, seed=3, x0=cardW / 2 + 10, z0=camZ0 + 10, z1=-700, h=(7, 20)))
-    pyl, _ = model_mesh("pylon-a", 34, on_cream); wt, _ = model_mesh("water-tower", 18, on_cream)
-    objs.append(instances("A_pylons", pyl, [(x, 0, z, ry, 1) for x, z, ry in ((-cardW / 2 - 6, -70, .3), (cardW / 2 + 6, -130, -.2), (-cardW / 2 - 6, -190, .1), (cardW / 2 + 6, -250, 0))]))
-    r = rng(8); items = []
-    for i in range(6):
-        x = (1 if i % 2 else -1) * (cardW / 2 + 5 + r() * 3); items.append((x, 0, -40 - i * 45, r() * 3, 1))
-    objs.append(instances("A_watertowers", wt, items))
+    if V3:
+        for m in words:
+            if not m["slab"] and m.data.name.split("_w_")[-1].lower() in ("let's", "a", "new"): add_bar(m)
+        objs.append(skyline("A_sky", "cream", 3, cardW / 2 + 30, 160, -80, -520, n=34, scale=(2.6, 5.2)))
+        objs += [thin_rule("A_thin1", 500, .28, "black", (0, .035, -34), (-math.pi / 2, 0, .95)), thin_rule("A_thin2", 500, .2, "black", (0, .035, -96), (-math.pi / 2, 0, -1.15))]
+        objs += [blur_slab("A_fg1", 2.5, 14, "red", (-3.6, 7, -28), .6), blur_slab("A_fg2", 2.5, 12, "black", (4.2, 6, -60), -.5)]
+    else:
+        objs.append(rows_of_buildings("A_rows", on_cream, seed=3, x0=cardW / 2 + 10, z0=camZ0 + 10, z1=-700, h=(7, 20)))
+        pyl, _ = model_mesh("pylon-a", 34, on_cream); wt, _ = model_mesh("water-tower", 18, on_cream)
+        objs.append(instances("A_pylons", pyl, [(x, 0, z, ry, 1) for x, z, ry in ((-cardW / 2 - 6, -70, .3), (cardW / 2 + 6, -130, -.2), (-cardW / 2 - 6, -190, .1), (cardW / 2 + 6, -250, 0))]))
+        r = rng(8); items = []
+        for i in range(6):
+            x = (1 if i % 2 else -1) * (cardW / 2 + 5 + r() * 3); items.append((x, 0, -40 - i * 45, r() * 3, 1))
+        objs.append(instances("A_watertowers", wt, items))
     rc = rng(5); cg, lg = Geo(), Geo()
     crane(cg, lg, rc, -32, slabZ + 6, 2.2, .35); crane(cg, lg, rc, 36, slabZ - 14, 2.0, 2.6)
     objs.append(mesh_obj("A_cranes", cg.mesh("A_cranes", [on_cream])))
@@ -500,7 +516,7 @@ def shot_b():
             m.scale = (cap, cap, cap); m.location = (x + m["width"] * cap / 2, oh + lint / 2 - cap / 2, gateZ[k] + D / 2 + .05)
             x += (m["width"] + gw) * cap
     for m in words: m["base"] = tuple(m.scale)
-    objs.append(rows_of_buildings("B_rows", on_blue, seed=9, x0=2, z0=-760, z1=-1300, h=(10, 26)))
+    objs.append(skyline("B_sky", "red", 9, 2, 300, -780, -1250, n=40, scale=(3.5, 7)) if V3 else rows_of_buildings("B_rows", on_blue, seed=9, x0=2, z0=-760, z1=-1300, h=(10, 26)))
     def update(t, active):
         for o in objs: vis(o, active)
         for m in words: stamp(m, t, m["s"], active)
@@ -532,7 +548,12 @@ def shot_c():
     mMeans = along(B, fit(word(wM["w"], FLAT["cream"]), 6.4), -15)
     mLess = along(B, fit(word(wL["w"], FLAT["cream"]), 6.4), 13)
     for m in (mWhere, mMeans, mLess): m.location.z += 3.2; m["base"] = tuple(m.scale)
-    objs.append(rows_of_buildings("C_rows", on_dark, seed=13, x0=2, z0=-200, z1=-900, h=(8, 24)))
+    if V3:
+        objs.append(skyline("C_sky", "black", 13, 2, 260, -260, -700, n=26, scale=(3, 6)))
+        for i, (ang, dz, w) in enumerate(((.95, -10, .22), (-.2, -64, .16), (1.6, 30, .18))):
+            objs.append(thin_rule(f"C_thin{i}", 600, w, "cream", (C.x, .02, C.z + dz), (-math.pi / 2, 0, ang)))
+    else:
+        objs.append(rows_of_buildings("C_rows", on_dark, seed=13, x0=2, z0=-200, z1=-900, h=(8, 24)))
     def update(t, active):
         for o in objs: vis(o, active)
         stamp(mWhere, t, wW["s"], active); stamp(mMeans, t, wM["s"], active); stamp(mLess, t, wL["s"], active)
@@ -571,7 +592,7 @@ def shot_d():
         z -= 7.5 + r() * 2.5
     for k in (0, 1):
         g = Geo(); person(g, k); objs.append(instances(f"D_crowd{k}", g.mesh(f"D_person{k}", [on_cream]), lists[k]))
-    objs.append(rows_of_buildings("D_rows", on_cream, seed=17, x0=2, z0=-320, z1=-1000, h=(10, 30)))
+    objs.append(skyline("D_sky", "cream", 17, 2, 220, -330, -900, n=36, scale=(3.5, 7)) if V3 else rows_of_buildings("D_rows", on_cream, seed=17, x0=2, z0=-320, z1=-1000, h=(10, 30)))
     words = [(mA, wAnd["s"]), (mP, wPeople["s"]), (mM, wMore["s"])]
     def update(t, active):
         for o in objs: vis(o, active)
@@ -595,7 +616,7 @@ def setup_render():
     r.fps = FPS; r.fps_base = 1; SC.frame_start = 0; SC.frame_end = F_LAST
     r.film_transparent = True
     r.use_motion_blur = not opt("--nomb"); r.motion_blur_shutter = 0.5; r.motion_blur_position = "CENTER"
-    e = SC.eevee; e.taa_render_samples = int(opt("--samples", 32)); e.bokeh_max_size = 28 * r.resolution_percentage / 100
+    e = SC.eevee; e.taa_render_samples = int(opt("--samples", 32)); e.bokeh_max_size = (110 if V3 else 28) * r.resolution_percentage / 100
     e.motion_blur_steps = int(opt("--mbsteps", 2)); e.motion_blur_max = 64
     e.use_shadows = True; e.shadow_ray_count = 1; e.shadow_step_count = 6
     for k in ("use_gtao", "use_raytracing"):
@@ -635,7 +656,7 @@ def paper_image(W=1280, H=720):
     m = 1 + relief * .42 + cloud * .07 + alb + (fbm(qx * .045 + 3, qy * .045 + 3) - .5) * .07
     lift = np.maximum(relief, 0) * .06 + np.maximum(alb, 0) * .3
     ux, uy = (px / W - .5) * (W / H), py / H - .5; Ln = np.sqrt(ux * ux + uy * uy)
-    k = np.clip((Ln - .35) / (1.05 - .35), 0, 1); v = 1 - .55 * (k * k * (3 - 2 * k))
+    k = np.clip((Ln - .35) / (1.05 - .35), 0, 1); v = 1 - (.72 if V3 else .55) * (k * k * (3 - 2 * k))
     # set the colour space before the pixels: switching it afterwards re-encoded the buffer (values came back ^1/2.2)
     img = bpy.data.images.new("NC_paper_gen", W, H, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
     rgba = np.stack([m, lift, v, np.ones_like(m)], -1).astype(np.float32)
@@ -660,6 +681,10 @@ def setup_compositor():
     bg = N.new("CompositorNodeRGB"); bg.name = "ground"
     ao = N.new("CompositorNodeAlphaOver"); L.new(bg.outputs[0], ao.inputs[1]); L.new(tr.outputs[0], ao.inputs[2])
     bl = N.new("CompositorNodeBlur"); bl.filter_type = "GAUSS"; bl.use_relative = False; bl.size_x = bl.size_y = 1
+    PX = SC.render.resolution_percentage / 100
+    # Blender 4.5 reads the blur size from the Size socket (pixels); the old properties above do nothing. v2 and take e
+    # were judged without these blurs, so only v3 sets them.
+    if V3: bl.inputs["Size"].default_value = (1.0 * PX, 1.0 * PX)
     L.new(ao.outputs[0], bl.inputs["Image"])
     im = N.new("CompositorNodeImage"); im.image = paper_image()
     sc = N.new("CompositorNodeScale"); sc.space = "RENDER_SIZE"; sc.frame_method = "STRETCH"; L.new(im.outputs["Image"], sc.inputs["Image"])
@@ -691,6 +716,7 @@ def setup_compositor():
     if PROJ_ON:
         vb = N.new("CompositorNodeBlur"); vb.filter_type = "FAST_GAUSS"; vb.use_relative = True
         vb.factor_x = vb.factor_y = 0.12; vb.aspect_correction = "Y"; L.new(c2, vb.inputs["Image"])
+        if V3 and not opt("--noveilblur"): vb.inputs["Size"].default_value = (86.0 * PX, 86.0 * PX)
         veil = math_("ADD", math_("MULTIPLY", vb.outputs[0], VEIL), LIFT)
         c2 = mixrgb("ADD", c2, veil)
         gl = N.new("CompositorNodeGlare"); gl.glare_type = "FOG_GLOW"; gl.quality = "HIGH"; L.new(c2, gl.inputs["Image"])
@@ -698,6 +724,16 @@ def setup_compositor():
         gl.inputs["Strength"].default_value = HALO; gl.inputs["Size"].default_value = .55
         go = gl.outputs["Glare"] if "Glare" in gl.outputs else gl.outputs[0]
         c2 = mixrgb("ADD", c2, go) if "Glare" in gl.outputs else go
+    if V3 and not opt("--nopool"):   # a soft pool of light on the paper behind the subject (the reference's glowing grounds), backdrop only
+        em = N.new("CompositorNodeEllipseMask"); em.inputs["Position"].default_value = (.52, .6); em.inputs["Size"].default_value = (.95, .8)
+        eb = N.new("CompositorNodeBlur"); eb.filter_type = "FAST_GAUSS"; eb.inputs["Size"].default_value = (260.0 * PX, 260.0 * PX)
+        L.new(em.outputs[0], eb.inputs["Image"])
+        pk = math_("MULTIPLY", eb.outputs[0], k)                       # pool on the backdrop only
+        c2 = mixrgb("MULTIPLY", c2, math_("ADD", 1.0, math_("MULTIPLY", pk, .6)))   # the ground's own ink, brighter
+        wh = N.new("CompositorNodeRGB"); wh.outputs[0].default_value = (.95, .92, .86, 1)
+        mx = N.new("CompositorNodeMixRGB"); mx.blend_type = "MIX"
+        L.new(math_("MULTIPLY", math_("POWER", pk, 3.0), .035), mx.inputs[0]); L.new(c2, mx.inputs[1]); L.new(wh.outputs[0], mx.inputs[2])
+        c2 = mx.outputs[0]                                              # paling toward white only at the centre
     c3 = mixrgb("MULTIPLY", c2, sp.outputs[2])                                  # vignette
     comp = N.new("CompositorNodeComposite"); L.new(c3, comp.inputs[0])
     return tr, bg
@@ -718,6 +754,8 @@ def write_keys():
         kp.foreach_set("co", [c for p in pts for c in p])
         for k in kp: k.interpolation = "CONSTANT" if constant else "LINEAR"
         fc.update()
+
+if V3: exec(compile(open(os.path.join(HERE, "v3.py")).read(), "v3.py", "exec"), globals())
 
 def build():
     t0 = time.time()
