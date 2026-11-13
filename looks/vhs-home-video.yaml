@@ -4,7 +4,7 @@ note: >-
   A family camcorder tape of kids playing in a park into the low sun, played back on an old television. The kids
   are back-lit shapes with warm rims, the camera drifts and hunts for focus, and the tape brings a blue PLAY
   screen, a rolling tracking band, colour bleed and scanlines.
-used: Children at Play, Bob Wiseman (test)
+used: Children at Play, Bob Wiseman (look test, then a full-song draft sent as round 2; parked)
 cost: free
 group: code
 order: 515
@@ -33,6 +33,9 @@ code:
     adds the VCR's blue screen, PLAY, snow and tracking band, then the house CRT shader (js/crt.js, a factory made
     from bobwiseman-libelous/js/tv/crt.js), rounded glass, bezel and screen spill. Stage 3 needs Chrome's
     --allow-file-access-from-files (tools/render.mjs, which also redraws any frame the GPU canvas hands back blank), because WebGL won't take file:// images otherwise.
+    The full song splits stage 1 into scenes (js/scenes.js: SCENE.add with its own camera, light, stamp and takes;
+    one file per scene in js/scenes/), so builders work in parallel. A fix to one scene re-renders only its section
+    through all three stages and is spliced into the last full TV render.
 rules:
   - >-
     Shoot into the sun: everything between it and the camera is one dark shape with a warm rim and a soft halo,
@@ -52,6 +55,15 @@ rules:
   - >-
     The TV is deterministic: house CRT shader at 240 lines, rounded tube, dark bezel, screen colour spilling on a
     dark room, 4:3 tube inside 16:9
+  - >-
+    For a whole song the TV sits in a real room (a GPT Image plate with a keyed screen) and the room pushes in
+    until the screen nearly fills the frame, pulling back out only at the end; a tiny screen can't carry five minutes
+  - >-
+    Any shot whose light is hard to picture (low sun, figures lying down, raised arms) gets a Blender reference
+    first: rigged figures from figure-library, the scene's sun angle and framing; draw the shadows from it
+  - >-
+    Hands are solid shapes (a palm, the index, the other fingers as one curled bundle, a thumb). Never draw fingers
+    as separate thin strokes: at silhouette size they read as claws or as deformed
 palette:
   - "#261a1e"
   - "#fde9c2"
@@ -65,12 +77,16 @@ proof:
     - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-medium_f0-f948_24fps_720p.mp4
     - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-mild_f0-f948_24fps_720p.mp4
     - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-clean_f0-f948_24fps_720p.mp4
+    - bobwiseman-children-at-play-vhs/out/children-at-play_vhs-medium-d8_f0-f7920_24fps_720p.mp4 (full song, https://youtu.be/OzAhstV9xvc)
   pr:
     - rheos/secondunit-videos#496
     - rheos/secondunit-videos#497
 verdict: >-
-  Robin, 2026-11-11, picked the Medium VHS tape strength over Mild and Clean VHS for the style menu. Look test
-  only; not shown to Bob.
+  Robin, 2026-11-11, picked the Medium VHS tape strength over Mild and Clean VHS for the style menu. He then had the
+  whole song built (nine scenes on one family tape, the TV in a 1990s den pushing in); draft 2 went to Bob as
+  round 2 on 2026-11-12. Bob, 2026-11-13: the two are lovers and the laughter the mother hears is from the hayloft,
+  but "If you want to use as is no problem". Robin parked it the same day: a family camcorder on two teenage lovers
+  would be creepy, so the look suits innocent home-video stories, flashbacks and found-tape sections best.
 related:
   - newsdesk
   - silhouette
