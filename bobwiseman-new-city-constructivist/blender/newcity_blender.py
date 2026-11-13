@@ -758,8 +758,42 @@ def calib():
     img = bpy.data.images.load(p); px = np.array(img.pixels[:]).reshape(-1, 4)
     print(f"[calib] sun energy {CAL}: Shader to RGB = {px[:, 0].mean():.4f}")
 
+def lineup():
+    """The new figures and props for sign-off, shaded like the film, on one lettered board."""
+    sys.path.insert(0, HERE); import props; props.bind(T, lambda a: Matrix.Rotation(a, 4, "Z"))
+    setup_render(); SC.render.film_transparent = False; SC.render.use_motion_blur = False; cd.dof.use_dof = False
+    ik = inks(0.0)
+    for k, n in INK_NODE.items(): n.outputs[0].default_value = ik[k] + (1,)
+    wt = SC.world.node_tree; bgn = next(n for n in wt.nodes if n.type == "BACKGROUND")
+    bgn.inputs[0].default_value = ik["cream"] + (1,); bgn.inputs[1].default_value = 1
+    lp = wt.nodes.new("ShaderNodeLightPath"); mx = wt.nodes.new("ShaderNodeMixShader"); dark = wt.nodes.new("ShaderNodeBackground")
+    dark.inputs[1].default_value = 0; outn = next(n for n in wt.nodes if n.type == "OUTPUT_WORLD")
+    wt.links.new(lp.outputs["Is Camera Ray"], mx.inputs[0]); wt.links.new(dark.outputs[0], mx.inputs[1])
+    wt.links.new(bgn.outputs[0], mx.inputs[2]); wt.links.new(mx.outputs[0], outn.inputs[0])
+    on = ink("lineup", "cream", "red", "black", .42, .96, .07)
+    def label(letter, x, z):
+        t = word(letter, FLAT["black"]); place(t, (x, .05, z), (-math.pi / 2, 0, 0), (1.3, 1.3, 1.3))
+    for ri, letter in enumerate(("A", "B")):
+        z = 3.2 - ri * 4.0; label(letter, -11.5, z + .6)
+        for i, f in enumerate([lambda g: person(g, 1)] + props.ANIMALS[letter]):
+            g = Geo(); f(g); o = obj(f"LU_{letter}{i}", g.mesh(f"LU_{letter}{i}", [on])); place(o, (-8.6 + i * 3.0, 0, z), (0, .45, 0))
+    label("C", -11.5, -4.4)
+    for i in range(3):
+        gg = Geo(); props.flagpole(gg, 4.6); o = obj(f"LU_C{i}", gg.mesh("LU_C", [on])); place(o, (-8.4 + i * 1.8, 0, -5.0 - i * .5))
+    label("D", .2, -4.4)
+    for i in range(4):
+        gg = Geo(); props.block(gg, 2.4, .9, 1.1); o = obj(f"LU_D{i}", gg.mesh("LU_D", [on]))
+        place(o, (3.6 + (i % 2) * .35, i * .9, -5.0), (0, .35 + i * .08, 0))
+        w = word("BUILD", FLAT["cream"]); w.parent = o; place(w, (0, .93, .3), (-math.pi / 2, 0, 0), (.42, .42, .42))
+    camera((0, 15, 22), (-.6, 0, -1.2), 0, 38, 26, 0)
+    write_keys(); SC.frame_set(0)
+    d = os.path.join(OUT, "lineup"); os.makedirs(d, exist_ok=True); SC.render.filepath = os.path.join(d, "new-figures-board.png")
+    bpy.ops.render.render(write_still=True); print("[newcity] board", SC.render.filepath)
+
 if opt("--calib"):
     calib(); sys.exit(0)
+if opt("--lineup"):
+    lineup(); sys.exit(0)
 build()
 if opt("--save"):
     p = opt("--save"); p = p if os.path.isabs(p) else os.path.join(PROJ, p)
