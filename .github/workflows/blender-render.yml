@@ -1,0 +1,128 @@
+# Render a Blender scene in parallel slices on CPU (EEVEE on Mesa's software GL), off the Mac: long EEVEE renders
+# have crashed its GPU. Started by tools/cloud-render/blender-cloud.sh, which uploads the .blend as a draft release
+# asset (a film's .blend holds its lyric as type, so it never enters git) and deletes it afterwards. No audio comes
+# here: the slices are joined into ONE silent video (artifact "film"); the Mac muxes the song.
+# Inputs reach shell scripts only through environment variables, and numbers are validated first.
+name: blender-render
+run-name: "blender-render ${{ inputs.label }}"
+on:
+  workflow_dispatch:
+    inputs:
+      label: { description: "run label, matches the release tag", required: true }
+      asset_id: { description: "release asset id of the .blend", required: true }
+      f0: { description: "first scene frame to render", required: true, default: "0" }
+      frames: { description: "how many frames from f0", required: true }
+      slices: { description: "parallel slices (1-20, at most frames)", required: true, default: "20" }
+      fps: { description: "frames per second", required: true, default: "24" }
+      crf: { description: "x264 crf for the slices (16 master, 23 draft)", required: false, default: "16" }
+      blender: { description: "bpy version from PyPI", required: false, default: "4.5.14" }
+permissions:
+  contents: write   # a draft release (the package) is only visible with write access
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+    steps:
+      - id: m
+        env:
+          F0: ${{ inputs.f0 }}
+          FRAMES: ${{ inputs.frames }}
+          SLICES: ${{ inputs.slices }}
+          FPS: ${{ inputs.fps }}
+          ASSET: ${{ inputs.asset_id }}
+          CRF: ${{ inputs.crf || '16' }}
+          BPY: ${{ inputs.blender || '4.5.14' }}
+        run: |
+          for v in "$F0" "$FRAMES" "$SLICES" "$FPS" "$ASSET" "$CRF"; do
+            [[ "$v" =~ ^[0-9]+$ ]] || { echo "not a whole number: $v"; exit 1; }
+          done
+          [[ "$BPY" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "bad bpy version: $BPY"; exit 1; }
+          max=$(( FRAMES < 20 ? FRAMES : 20 ))
+          (( FRAMES > 0 && SLICES >= 1 && SLICES <= max )) || { echo "need frames > 0 and 1 <= slices <= $max"; exit 1; }
+          echo "matrix=$(seq 0 $(( SLICES - 1 )) | jq -cs .)" >> "$GITHUB_OUTPUT"
+  slice:
+    needs: plan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        n: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    env:
+      ASSET: ${{ inputs.asset_id }}
+      F0: ${{ inputs.f0 }}
+      FRAMES: ${{ inputs.frames }}
+      SLICES: ${{ inputs.slices }}
+      FPS: ${{ inputs.fps }}
+      CRF: ${{ inputs.crf || '16' }}
+      BPY: ${{ inputs.blender || '4.5.14' }}
+      N: ${{ matrix.n }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/cloud-render
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install
+        run: |
+          printf 'Acquire::http::Timeout "20";\nAcquire::https::Timeout "20";\nAcquire::Retries "5";\nAcquire::ForceIPv4 "true";\n' | sudo tee /etc/apt/apt.conf.d/99cr-timeouts > /dev/null
+          # the libraries the bpy wheel links against, and EGL/GL from Mesa so EEVEE gets a (software) GPU context
+          sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg libxkbcommon0 libxi6 \
+            libxxf86vm1 libxfixes3 libxrender1 libsm6 libx11-6 libgl1 libegl1 libglvnd0 libgles2 libegl-mesa0 \
+            libgl1-mesa-dri > /dev/null
+          pip install -q "bpy==$BPY"
+      - name: Fetch package
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$ASSET" > scene.blend
+      - name: Render and encode
+        run: |
+          a=$(( F0 + N * FRAMES / SLICES )); b=$(( F0 + (N + 1) * FRAMES / SLICES ))
+          python tools/cloud-render/blender-slice.py scene.blend "$a" "$b" frames
+          mkdir -p out
+          ffmpeg -y -loglevel error -framerate "$FPS" -start_number "$a" -i frames/f%05d.png -frames:v $(( b - a )) \
+            -c:v libx264 -preset medium -crf "$CRF" -pix_fmt yuv420p \
+            "out/slice_$(printf %03d "$N")_f$(printf %06d "$a")-f$(printf %06d "$b").mp4"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slice-${{ matrix.n }}
+          path: out/
+          retention-days: 2
+          compression-level: 0
+  join:
+    needs: [plan, slice]
+    runs-on: ubuntu-latest
+    env:
+      FRAMES: ${{ inputs.frames }}
+      SLICES: ${{ inputs.slices }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: slice-*
+          path: slices
+          merge-multiple: true
+      - name: Join
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y --no-install-recommends ffmpeg > /dev/null
+          mapfile -t files < <(ls slices/slice_*.mp4 | sort)
+          (( ${#files[@]} == SLICES )) || { echo "got ${#files[@]} of $SLICES slices"; exit 1; }
+          for f in "${files[@]}"; do
+            n=${f##*/}; a=${n#*_f}; a=${a%%-*}; b=${n##*-f}; b=${b%.mp4}; want=$(( 10#$b - 10#$a ))
+            have=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 "$f" | tr -d ',')
+            (( have == want )) || { echo "$n: $have frames, want $want"; exit 1; }
+            echo "file '$PWD/$f'"
+          done > list.txt
+          mkdir -p film
+          ffmpeg -y -loglevel error -f concat -safe 0 -i list.txt -c copy -movflags +faststart film/film.mp4
+          got=$(ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of csv=p=0 film/film.mp4 | tr -d ',')
+          (( got == FRAMES )) || { echo "joined video has $got frames, want $FRAMES"; exit 1; }
+          echo "joined $got frames, $(du -h film/film.mp4 | cut -f1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: film
+          path: film/film.mp4
+          retention-days: 2
+          compression-level: 0

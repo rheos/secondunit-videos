@@ -13,16 +13,21 @@ keywords:
 - dialogue
 - video-gen
 - review
+- location
+- floor-plan
+- continuity
+- camera
 fits:
 - all-generated dialogue shorts and episodes (create mode)
 - not song videos; for those use the same author's music-video skill
 - an Academy lesson on review gates and cheap retakes
+- the floor-plan method alone: any generated set seen from more than one angle (second-unit extensions, create mode)
 deterministic: n/a
-how: 'Claude Code plugin (`/plugin marketplace add makevoid/claude-make-an-anime`), Ruby 3.2+ entry point `scripts/mv.rb`, all paid calls through Fal with our key. It writes a plan with every prompt and the paid-call count and waits for approval before spending. Not installed or run by us yet. Ideas worth taking even if we never run it: Fal receipts keyed by SHA-256 of endpoint and input (an identical request returns the stored result, free; our music-video toolkit already had them, and since 2026-11-10 `secondunit-worker/fal_run.py` gives every other Fal call the same, rheos/secondunit-worker#46); voices before animation so line lengths set shot lengths; a painted end frame to stop props vanishing; paper-cut manga panels for two people far apart; a free review:believable pre-flight.'
+how: 'Claude Code plugin (`/plugin marketplace add makevoid/claude-make-an-anime`), Ruby 3.2+ entry point `scripts/mv.rb`, all paid calls through Fal with our key. It writes a plan with every prompt and the paid-call count and waits for approval before spending. Not installed or run by us yet. Ideas worth taking even if we never run it: Fal receipts keyed by SHA-256 of endpoint and input (an identical request returns the stored result, free; our music-video toolkit already had them, and since 2026-11-10 `secondunit-worker/fal_run.py` gives every other Fal call the same, rheos/secondunit-worker#46); voices before animation so line lengths set shot lengths; a painted end frame to stop props vanishing; paper-cut manga panels for two people far apart; a free review:believable pre-flight; and (shown Nov 12, not in the repo yet) the floor-plan method: paint each location once straight down with every prop, wall and tree in its spot and a compass, pass that plan as the location reference for every keyframe, and write each shot as where the camera stands and which compass way it looks ("on the jetty on the WEST shore, looks EAST over their shoulders"), drawn as a cone on the plan.'
 cost: paid (Fal). His 74 s Too Salty took 4 sheets, 22 keyframes, 23 H3 takes, about 22 voice takes, 1 score and 9 SFX; H3 is $0.03/s on Fal, GPT Image 2.6 per-image price unconfirmed, ElevenLabs on plan credits. Seedance runs several times the H3 cost.
 url: https://github.com/makevoid/claude-make-an-anime
-detail: MIT. Ruby only as the execution layer (FFmpeg, ImageMagick, Python, Node/p5, Swift behind it). Needs Node 22.12+ and Chrome for p5, macOS 14+ for the Swift VFX. Every step is cached per run under output/<run>/, rejected takes kept in output/<run>/rejected/. The near-ground motion measure was calibrated on only two runs (0.11 rejected, 0.28 good), so read the frame strip too.
-source: x.com/makevoid/status/2120174324329984463
+detail: MIT. Ruby only as the execution layer (FFmpeg, ImageMagick, Python, Node/p5, Swift behind it). Needs Node 22.12+ and Chrome for p5, macOS 14+ for the Swift VFX. Every step is cached per run under output/<run>/, rejected takes kept in output/<run>/rejected/. The near-ground motion measure was calibrated on only two runs (0.11 rejected, 0.28 good), so read the frame strip too. The floor-plan method is seen only in his 2:14 Camera Lab video (x.com/makevoid/status/2120909491092791504, 12 scenes, about 36 shots, every frame captioned with shot type, camera position by compass and the reason for the cut, plan inset top right); the repo's location sheets are still one wide 16:9 view. Checked against the plans, landmarks land on the correct side in the stills we checked (pond, bamboo bridge, tearoom), but the plan pins keyframes, not the video model mid-move (a dojo crane slides the drum from right of the scroll to left of it), and nothing pins what lies past the plan's edges (wooded hills behind the pond whichever way the camera faces). See QUIVER 2026-11-12.
+source: x.com/makevoid/status/2120174324329984463 (plugin), x.com/makevoid/status/2120909491092791504 (floor-plan method)
 related:
 - swift-noimage-skill
 - fal-seedance
