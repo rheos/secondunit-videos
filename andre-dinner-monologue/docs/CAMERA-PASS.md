@@ -1,4 +1,9 @@
-# Camera pass: hold, then cut (proposal, Nov 13 2026; not built)
+# Camera pass: hold, then cut (built as cut 06, Nov 13 2026; REJECTED by Robin)
+
+Status: Robin watched cut 06 and rejected it ("I don't think anything about that went correctly").
+The camera stays on the branch to be altered spot by spot with him, starting at 0:21, from pictures,
+not from this document's rules. Two of his notes on it: never cut to an empty table, and a cut should
+be a transition, not a plain cut. See LOOKS.md §8. Everything below is the plan as it was.
 
 Mark Achbar's note on cut 03, paraphrased: it feels a bit like a video game; the shot does not have to
 be continuous; being able to fly everywhere is not a reason to; choose angles for an effect; where it

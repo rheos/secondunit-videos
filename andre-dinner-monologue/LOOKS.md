@@ -300,8 +300,14 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
     the tree", and "because this is a 1981 New York, it could have the Twin Towers in it"). At the
     end the Twin Towers fold flat sideways instead of sinking, our call, so the image does not read
     as September 11. On the audio he decided to credit the film and not pursue rights.
-    Mark's camera note is answered in cut 06 (below).
-  - Cut 06 (Nov 13), the camera pass, `docs/CAMERA-PASS.md`. Robin's ruling: cutting is not the default. He
+    Mark's camera note is still open: cut 06 (below) was Robin's no.
+  - Cut 06 (Nov 13), the camera pass, `docs/CAMERA-PASS.md`. REJECTED by Robin the same day: "I don't
+    think anything about that went correctly." Never uploaded. Its camera stays on the branch, to be
+    reworked spot by spot with him (he chose to keep the changes and alter them); cut 05's camera is at
+    commit 2a3f92a. His notes so far: a cut must never land on an empty table ("That's stupid"), and
+    cuts should be transitions ("I don't want it just to sort of cut. I want it to transition somehow").
+    He paused it on Nov 13 to come back in a few days; start again at 0:21, from pictures, one spot at a
+    time. What follows is what cut 06 did, for the record. Robin's ruling: cutting is not the default. He
     likes the moves where the lens pulls out and comes down on a new place, above all 1:43 to 1:50 (up to the
     high wide, down on the wall and the guards: "I don't want to cut to that"), and picked the others one by
     one: the climb over New York, the drop to the fence, wall to head, up over the palm, down to the couple.
