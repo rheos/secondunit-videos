@@ -45,6 +45,7 @@ export const sectionAt = (f) => SECTIONS.find((s) => f < s.F1) || SECTIONS[SECTI
 export const sectionNo = (f) => SECTIONS.indexOf(sectionAt(f)) + 1;
 export const camAt = (f) => sectionAt(f).camAt(f);
 export const BEATS = SECTIONS.flatMap((s) => s.BEATS);
+export const CUTS = [...new Set(SECTIONS.flatMap((s) => s.CUTS || []))].sort((a, b) => a - b);      // every declared camera cut (lib.js shots)
 export const CUES_ALL = Object.assign({}, ...SECTIONS.map((s) => s.CUES || {}));      // sections 5 to 7 keep theirs in js/cues.js
 
 // the standees of sections 5 and 6 (the tree man and the sixteen citizens): section 5 poses them to f2544, section 6

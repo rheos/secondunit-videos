@@ -92,6 +92,7 @@ window.renderFrame = (f, n = NS) => {
 
 // ---------- checks the tools read
 // the camera per frame, and how tall each visible figure stands on screen (px)
+window.camCuts = () => S.CUTS;
 window.camInfo = (f) => { const c = S.camAt(f); return { f, P: c.P, T: c.T, fov: c.fov }; };
 window.figurePx = (f) => {
   setState(f, [0, 0, 0]); camera.updateMatrixWorld(true); scene.updateMatrixWorld(true);

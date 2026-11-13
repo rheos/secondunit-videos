@@ -13,6 +13,64 @@ The one unbroken flying camera was our rule (the storyboard's "one continuous mo
 This pass replaces it. Nothing that happens on the table changes, and no cue frame moves: only where
 the lens is.
 
+## Robin's answer to the proposal (Nov 13): cutting is not the default
+
+"I do definitely like some of the times that the camera zooms out and comes down. Like, I especially
+like the part just before it talks about the new concentration camp, how it zooms out and then comes
+down on the prison guards... I don't want to cut to that. That one is definitely a good one that
+zooms out and then zooms in on the new location."
+
+That move is 1:43 to 1:50 (f2466 to f2634): up from the fence to 144 cm in two seconds, a hold on
+the lit city, then down to the wall in three and a half. It is the fastest move in the film and it
+stays exactly as it is. It passes within 3 cm of nothing. So speed alone is not the fault, and the
+table of shots below is wrong wherever it cuts a move of this kind without his say.
+
+The travels sort into two kinds by the height the lens covers:
+
+- Pull-outs and come-downs. The lens leaves a place by rising or arrives by descending: 0:21 (bathtub
+  down to the ranks), 1:28 to 1:35 (up over the table as New York rises), 1:36 (down to the fence),
+  1:43 to 1:50 (kept), 1:58 (up and over from the wall to the head, peaking at 62 cm), 2:12 (up over
+  the palm), 2:22 to 2:25 (down from the pine to the couple), 3:01 (the last rise, kept). Each of
+  these is Robin's call, one by one.
+- Swings at table height. The lens stays under about 10 cm and turns hard to face the next thing:
+  0:27 (round to the wheel), 0:50 (into the room), 1:14 to 1:26 (round the tree man, 3.5 degrees a
+  frame), 2:26 to 2:31 (round the couple, 3.0, through the fence), 2:41 (in the dark room). These are
+  the video-game moves and hold every fence graze. They are the ones to cut.
+
+## Decided with Robin (Nov 13): what cut 06 does
+
+His picks from the list of pull-outs and come-downs, and one line on the rest. On the 1:46 dive he
+added: "I like when it dives from the high wide to the wall... but maybe we could slow it down if it
+seems too fast. I wouldn't want that to be a cut."
+
+| Time | Cut 06 |
+|---|---|
+| 0:00 to 0:21 | As it is (the opening push, the bathtub arc). The floating glass and fork are gone |
+| 0:21 | CUT on "Okay, yes" (f504) to the ranks. He did not keep the swoop down from the bathtub |
+| 0:27 | CUT to the wheel (was a swing) |
+| 0:35 to 0:40 | The small lift onto the coin's face and back stays a move, eased |
+| 0:50 | CUT (f1196) to the room (was a swing) |
+| 1:15 to 1:31 | CUTS in place of the swings round the tree man: f1800, "trees", "redwoods", "84", "where are you from" |
+| 1:31 to 1:36 | KEPT: the climb over the table as New York rises. The cut at 1:31 lands on the climb after its whip turn |
+| 1:36 | KEPT: down to the fence, moved clear of the fence fork it grazed |
+| 1:43 to 1:50 | KEPT: up to the high wide and down on the wall. The dive may take a little longer if the cues allow, never a cut |
+| 1:58 | KEPT: up and over from the wall to the head |
+| 2:12 | KEPT: up over the palm |
+| 2:19 | CUT on "escape" to where the sideways move at 50 cm ends (ours: this one was not on his list; fast and sideways, not a pull-out) |
+| 2:22 to 2:25 | KEPT: down from the pine to the couple, landing clear of the fence |
+| 2:26 to 2:34 | CUTS in place of the swings round the couple: side-on with them, the edge, behind them |
+| 2:40 | CUT (f3840) in place of the turn in the dark room |
+| 2:59 on | KEPT: the last rise, clear of the near plate tower |
+
+Stretches that were already slow in cut 05 are left alone: the first proposal's extra shots (guards
+close, crown, eyes and so on) are not built. The table of about 38 shots below is that first
+proposal, kept for the record; where it differs from this table, this table wins.
+
+Engine: `shots()` in `js/sections/lib.js`; a section exports `CUTS`; `SPEED` on `render.mjs` lists
+the declared cuts, skips them as moves, and flags a declared cut that hardly changes the view. The
+three blurred photographs of real tableware (the opening's glass and fork, the fork by the ranks at
+0:43, the glass and fork at 1:15) are never drawn.
+
 ## What the measurements say (cut 05)
 
 `check-film/cut05/camera-speed.txt` (speed and turn every 12 frames) and `camera-near.txt` (every
@@ -49,8 +107,9 @@ wants something close to the lens, it is a paper piece that stands or lies on th
 4. The lens stays 6 cm or more from every piece and never passes between two fence posts.
 5. No shot shows a piece arriving or leaving by a route it was only allowed because the old camera
    was elsewhere: check every new angle for pop-ins.
-6. Two moves stay as moves, because the move is the meaning: the opening push to the flame, and the
-   last slow rise from the table to the widest frame.
+6. Some moves stay as moves: the opening push to the flame, the last slow rise from the table to the
+   widest frame, the pull-out and come-down at 1:43 to 1:50, and any other pull-out or come-down Robin
+   names. A kept move keeps its speed; rule 4 still applies to it.
 
 ## Proposed shots (frames are film frames; times in the film)
 
@@ -76,8 +135,7 @@ wants something close to the lens, it is a paper piece that stands or lies on th
 | 1:32 | "New York" | The whole table from a raised three-quarter angle, already settled: towers, buildings, the Twin Towers, windows, fence. Hold to 1:36. This is the effect that is now lost in a swing |
 | 1:36 | "Do you know" | Street level at the fence; citizens stop and turn back |
 | 1:40 | "why" | Outside the fence with the tree man, looking back in |
-| 1:43 | "theories" | The high wide: the walled, lit city. Hold |
-| 1:46 | "I think that New York" | Low outside the wall; bricks arrive, the wall rises on "camp" |
+| 1:43 | no cut (kept move) | Up from the fence to the high wide, the hold on the lit city, then down to the wall as the bricks arrive and it rises on "camp". Exactly as in cut 05 |
 | 1:54 | "guards" | The row at the wall, close: the cards turn |
 | 1:55 | "pride" | The hero angle: guards rise into the battlements. Hold to 1:58 |
 | 1:58 | "And so they exist" | The head, at its eye height. Slow arc as the layers part |

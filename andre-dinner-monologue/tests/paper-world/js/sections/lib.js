@@ -99,6 +99,21 @@ export function handover(keys, f) {
   return { f, P: a.P, T: a.T, mP: b.P.map((v, i) => v - a.P[i]), mT: b.T.map((v, i) => v - a.T[i]) };
 }
 
+// ---------- shots (camera pass, Nov 13 2026). A section's camera may be a list of shots, { f, keys, float }, in frame
+// order: the lens is on a shot from its f to the next shot's f and CUTS there, with no blend. shots() returns
+// { camAt, CUTS }: export both from the section (story.js gathers every section's CUTS; the speed check counts a declared
+// cut as a cut and still fails on any other jump). A shot's keys are an ordinary key list (two or more), read only
+// inside the shot, so they may start before its f and run past its end: to keep an old move exactly, give the shot the
+// old key list whole. float is camFrom's third argument, a number or a function of f (default 0.5).
+// cutIn = true declares the section's own first frame a cut (its first shot does not start from the join).
+export function shots(list, cutIn = false) {
+  for (let i = 1; i < list.length; i++) if (!(list[i].f > list[i - 1].f)) throw new Error(`shots: shot ${i} (f${list[i].f}) must start after shot ${i - 1} (f${list[i - 1].f})`);
+  for (const s of list) if (!Array.isArray(s.keys) || s.keys.length < 2) throw new Error(`shots: the shot at f${s.f} needs two or more keys`);
+  const CUTS = list.slice(cutIn ? 0 : 1).map((s) => s.f);
+  const camAt = (f) => { let i = 0; while (i < list.length - 1 && f >= list[i + 1].f) i++; const s = list[i]; return camFrom(s.keys, f, typeof s.float === "function" ? s.float(f) : s.float ?? 0.5); };
+  return { camAt, CUTS };
+}
+
 // ---------- the ten sections' frame ranges (fixed: the audio is the clock) and the joins between them
 export const RANGES = { 1: [0, 196], 2: [196, 504], 3: [504, 1196], 4: [1196, 1800], 5: [1800, 2544], 6: [2544, 3130], 7: [3130, 3397], 8: [3397, 3840], 9: [3840, 4315], 10: [4315, 4761] };
 // A join is the camera at the boundary between two sections: position, target, velocity per frame, and the size of the

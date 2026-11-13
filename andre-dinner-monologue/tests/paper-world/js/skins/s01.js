@@ -46,7 +46,7 @@ export async function build(X) {
     const dx = cam.T[0] - cam.P[0], dy = cam.T[1] - cam.P[1], dz = cam.T[2] - cam.P[2], dl = Math.hypot(dx, dy, dz), L = X.now.level;
     for (const { g, m, dim, h } of fg) {
       const ahead = ((g.position.x - cam.P[0]) * dx + (g.position.y + h / 2 - cam.P[1]) * dy + (g.position.z - cam.P[2]) * dz) / dl;
-      g.visible = ahead > 0.8;
+      g.visible = false;      // camera pass, Nov 13: no photographed tableware in the air (was: ahead > 0.8)
       g.rotation.y = Math.atan2(cam.P[0] - g.position.x, cam.P[2] - g.position.z);
       m.material.color.setRGB(dim * L, dim * 0.94 * L, dim * 0.86 * L);
     }

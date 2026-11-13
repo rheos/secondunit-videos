@@ -43,11 +43,19 @@ if (process.env.NAMES) {
   // the camera path: cm a frame, degrees a frame of the view direction, and any dead stop or jump
   const cams = await pg.evaluate((fs) => fs.map((f) => window.camInfo(f)), list);
   const dir = (c) => { const d = c.T.map((v, i) => v - c.P[i]), l = Math.hypot(...d); return d.map((v) => v / l); };
-  let minV = 1e9, maxV = 0, maxA = 0, flags = [], rows = [];
+  const cuts = await pg.evaluate(() => window.camCuts()), seenCuts = [];
+  let minV = 1e9, maxV = 0, maxA = 0, flags = [], rows = [], fresh = true;
   for (let i = 1; i < cams.length; i++) {
-    const a = cams[i - 1], c = cams[i], v = Math.hypot(...c.P.map((x, k) => x - a.P[k])), da = dir(a), dc = dir(c), ang = Math.acos(Math.min(1, da[0] * dc[0] + da[1] * dc[1] + da[2] * dc[2])) * 180 / Math.PI;
+    const a = cams[i - 1], c = cams[i];
+    if (cuts.some((k) => k > a.f && k <= c.f)) {      // a declared cut: not a move. It must be a real change of view, or it reads as a jump cut
+      const dP = Math.hypot(...c.P.map((x, k) => x - a.P[k])), d0 = dir(a), d1 = dir(c), dA = Math.acos(Math.max(-1, Math.min(1, d0[0] * d1[0] + d0[1] * d1[1] + d0[2] * d1[2]))) * 180 / Math.PI;
+      seenCuts.push(`f${c.f} (${(c.f / 24 / 60 | 0)}:${String(c.f / 24 % 60 | 0).padStart(2, "0")})  lens moves ${dP.toFixed(0)} cm, view turns ${dA.toFixed(0)} deg`);
+      if (dP < 6 && dA < 12) flags.push(`f${c.f} declared cut hardly changes the view (${dP.toFixed(1)} cm, ${dA.toFixed(1)} deg): a jump cut`);
+      fresh = true; continue;
+    }
+    const v = Math.hypot(...c.P.map((x, k) => x - a.P[k])), da = dir(a), dc = dir(c), ang = Math.acos(Math.min(1, da[0] * dc[0] + da[1] * dc[1] + da[2] * dc[2])) * 180 / Math.PI;
     const dist = Math.hypot(...c.T.map((x, k) => x - c.P[k])), dDist = dist - Math.hypot(...a.T.map((x, k) => x - a.P[k]));
-    const pv = rows.length ? rows[rows.length - 1].v : v, acc = v - pv;
+    const pv = rows.length && !fresh ? rows[rows.length - 1].v : v, acc = v - pv; fresh = false;
     rows.push({ f: c.f, v, ang, acc, y: c.P[1], dist });
     minV = Math.min(minV, v); maxV = Math.max(maxV, v); maxA = Math.max(maxA, Math.abs(acc));
     if (v < 0.05) flags.push(`f${c.f} slow ${v.toFixed(3)} cm/frame`);
@@ -55,6 +63,7 @@ if (process.env.NAMES) {
     if (v < 0.02 && Math.abs(dDist) > 0.05) flags.push(`f${c.f} zoom-only`);
   }
   for (const r of rows) if ((r.f - list[0]) % (+process.env.SPEED > 1 ? +process.env.SPEED : 12) === 0) console.log(`f${r.f}  ${r.v.toFixed(3)} cm/f  turn ${r.ang.toFixed(2)} deg/f  height ${r.y.toFixed(1)}  to target ${r.dist.toFixed(1)}  ${"#".repeat(Math.min(60, Math.round(r.v * 12)))}`);
+  console.log(`${seenCuts.length} declared cuts${seenCuts.length ? ":\n" + seenCuts.join("\n") : ""}`);
   console.log(`camera speed: min ${minV.toFixed(3)}  max ${maxV.toFixed(2)} cm/frame; largest change ${maxA.toFixed(3)} cm/frame^2; ${flags.length ? "FLAGS:\n" + flags.join("\n") : "no dead stops, no jumps"}`);
 } else if (process.env.NEAR) {      // NEAR=1.2: every frame where the lens is inside or within that many cm of a visible piece
   const lim = +process.env.NEAR > 0 && +process.env.NEAR < 50 ? +process.env.NEAR : 1.2;

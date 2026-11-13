@@ -496,7 +496,7 @@ export async function buildTable(X) {
     discs.forEach(({ disc, at }) => { disc.material.color.copy(tintAt(at[0], at[1])); disc.material.side = THREE.FrontSide; });
     cface.rotation.set(-leanFor(cam.P, candle.position, CH), Math.atan2(cam.P[0] - candleXZ[0], cam.P[2] - candleXZ[1]), 0);
     rise.forEach((r) => r(f, cam.P)); vols.forEach((v) => v.aim(cam.P, L)); posts.forEach((p) => p(f));
-    fg.forEach((g) => { const d = g.userData.dim; g.rotation.y = Math.atan2(cam.P[0] - g.position.x, cam.P[2] - g.position.z); g.visible = f < g.userData.until; g.userData.card.material.color.setRGB(d * LEVEL, d * 0.94 * LEVEL, d * 0.86 * LEVEL); });      // gone once it is behind the lens
+    fg.forEach((g) => { const d = g.userData.dim; g.rotation.y = Math.atan2(cam.P[0] - g.position.x, cam.P[2] - g.position.z); g.visible = false;      /* camera pass, Nov 13: the photographed fork and glass foot read as hovering in a paper world, and the lens went through the fork at f1916; was f < g.userData.until */ g.userData.card.material.color.setRGB(d * LEVEL, d * 0.94 * LEVEL, d * 0.86 * LEVEL); });      // gone once it is behind the lens
     treeman.pose(S.treemanAt(f)); citizens.forEach((c, i) => c.pose(S.citizenAt(i, f)));
     return flm;
   }
