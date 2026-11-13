@@ -7,7 +7,7 @@
 // Units: centimetres, y up, the cloth is y = 0, x to the right, z toward the viewer.
 import { CUES } from "../cues/s08.js";                  // generated: $PY tools/onsets.py 08 (from tools/cues/s08.json)
 import { clamp, lerp, smooth, smoother, spring } from "../kit.js";
-import { camFrom } from "./lib.js";
+import { camRaw, shots } from "./lib.js";
 import { joinKey, joinFloat } from "./joins.js";
 import * as S7 from "./s07.js";
 export { CUES };
@@ -101,40 +101,101 @@ export const fill = (f) => (f < F0 ? 1 : lerp(1, 0.88 / 1.201, settle(f)));     
 export const BIAS0 = -0.012, BIAS = -0.004;
 export const biasAt = (f) => lerp(BIAS0, BIAS, smooth((f - F0) / 60) * (1 - smooth((f - (C.whole - 10)) / 40)));
 
-// ---------- the camera: the first key is the join at F0, the last is the join at F1 (position, target and velocity)
+// ---------- the camera (camera pass, Nov 13 2026): five shots and four cuts in place of the one unbroken move.
+// The come-down from the pine to the couple is kept as a move; the three swings round the couple at table height are cuts,
+// to the views cut 05 swung between (behind them for the gate, side-on, the stop), each now held.
 const mid = (f) => { const s = coupleAt(f); return [s.x, s.z]; };
 const at = (f, y = 2.7, along = 0, out = 0) => { const [x, z] = mid(f); return [x + along * HEAD[0] + out * NEAR[0], y, z + along * HEAD[1] + out * NEAR[1]]; };
-export const CAM_KEYS = [
+// cut 05's key list, whole: the one move from the join at F0 to the join at F1. Two stretches of it are still in the film
+// (the come-down, with three keys nudged, and "problem" to "go", exactly); the rest is here for the record.
+const KEYS_05 = [
   joinKey(F0),
-  // f3397-f3476: forward over the near fence, high above its cards, then down inside it to the near left
   { f: 3425, P: [-12.5, 43, 78], T: [-8, 12, 42] },
   { f: 3446, P: [-20, 29, 62.5], T: [-15, 5, 46] },
   { f: 3462, P: [-24.6, 15.5, 59.2], T: [-16.6, 3.4, 46.6] },
   { f: 3476, P: [-26.6, 7.2, 58.3], T: at(3476, 3) },
-  // "Chiquita": beside them, low, a little ahead: the near plate tower, the glass and the candle behind them
   { f: 3490, P: [-27.4, 4.4, 57.5], T: at(3490, 2.7) },
   { f: 3522, P: [-22.4, 3.8, 58.6], T: at(3522, 2.6) },
-  // "out": behind their shoulder, looking along the slot to the fence, where the gate comes down
   { f: C.out1, P: [-11.8, 5.6, 58.9], T: [-30.5, 3, 40.5] },
   { f: 3566, P: [-13.6, 7, 58.5], T: [-31, 3, 41] },
   { f: 3580, P: [-24, 5.4, 57.8], T: at(3580, 2.8, 2) },
-  // the key image: side-on, close, level with them, the lit city behind, their shadow coming to the lens
   { f: 3598, P: at(3598, 2.9, 0, 13.6), T: at(3598, 2.9, -0.6) },
   { f: C.germany, P: at(C.germany, 2.8, 0, 13.4), T: at(C.germany, 2.9, -0.6) },
   { f: C.thirties, P: [-37.2, 3, 53.9], T: at(C.thirties, 2.9, -0.4) },
-  // the stop: slows with them, and starts round behind them
   { f: C.out2, P: [-35.9, 3.4, 52.6], T: at(C.out2, 2.8) },
   { f: C.here + 6, P: [-34.9, 4, 51.9], T: at(C.here + 6, 2.8) },
-  // "problem", "go": rises behind them and looks out past the edge
   { f: C.problem, P: [-34.5, 5.8, 50.6], T: [-43.5, 3.6, 37] },
   { f: C.go, P: [-34.6, 8.4, 49.6], T: [-45, 3.6, 35.5] },
   { f: 3768, P: [-37, 12.5, 47], T: [-62, 5.5, 25] },
-  // "whole", "world", "direction": lifts past them, out through the gate, to the join
   { f: C.whole, P: [-42, 15.4, 39.5], T: [-84, 8, 20] },
   { f: 3808, P: [-49.5, 17.2, 27.5], T: [-138, 10, 8] },
   joinKey(F1),
 ];
-export const camAt = (f) => camFrom(CAM_KEYS, f, joinFloat(F0, F1, f));
+const i05 = (f) => KEYS_05.findIndex((k) => k.f === f);
+// a key of cut 05 with the velocity cut 05 had through it, so the stretch before it stays exactly cut 05's
+const pin05 = (f) => { const h = 1e-3, a = camRaw(KEYS_05, f - h), b = camRaw(KEYS_05, f + h), k = KEYS_05[i05(f)];
+  return { f, P: k.P, T: k.T, mP: a.P.map((v, i) => (b.P[i] - v) / (2 * h)), mT: a.T.map((v, i) => (b.T[i] - v) / (2 * h)) }; };
+// a view from P by bearing (degrees from straight out over the left edge, toward the far side) and pitch, L cm long
+const look = (P, deg, pitch, L) => { const b = (deg * Math.PI) / 180, p = (pitch * Math.PI) / 180; return [P[0] - L * Math.cos(b) * Math.cos(p), P[1] + L * Math.sin(p), P[2] - L * Math.sin(b) * Math.cos(p)]; };
+
+// shot 1, f3397 (continuous from section 7): the hand slides out; the lens comes down from the pine to the couple (kept:
+// cut 05's move; it grazed fence_36 at 0.7 cm and fence_37 at 2.3 cm, so three keys are moved in from the near fence:
+// f3446 by 1.2 cm, f3462 by 2.4 cm and 0.5 cm higher, f3476 by 0.9 cm; the landing key at f3490 is where it was), lands
+// beside them as they hinge up on "Chiquita", a little ahead, and from there tracks with them at their own speed.
+const LAND = KEYS_05[i05(3490)].P, along1 = (f, y) => { const a = mid(3490), b = mid(f); return [LAND[0] + b[0] - a[0], y, LAND[2] + b[1] - a[1]]; };
+const SHOT1 = [
+  KEYS_05[0], pin05(3425),                                            // to f3425 exactly as it was
+  { f: 3446, P: [-20, 29, 61.3], T: [-15, 5, 46] },                   // over the near fence, 6 to 9 cm above its cards
+  { f: 3462, P: [-24.6, 16, 56.8], T: [-16.6, 3.4, 46.6] },           // then down inside it
+  { f: 3476, P: [-26.6, 7.2, 57.4], T: at(3476, 3) },
+  { f: 3490, P: LAND, T: at(3490, 2.7) },
+  { f: 3522, P: along1(3522, 4.3), T: at(3522, 2.7) },
+  { f: 3554, P: along1(3554, 4.2), T: at(3554, 2.7) },
+  { f: 3586, P: [along1(3554)[0] + 32 * V1 * HEAD[0], 4.1, along1(3554)[2] + 32 * V1 * HEAD[1]], T: [mid(3554)[0] + 32 * V1 * HEAD[0], 2.7, mid(3554)[1] + 32 * V1 * HEAD[1]] },
+];
+// shot 2, "out" (f3555): low behind the couple, on their near side, looking along the slot to the fence, as cut 05
+// framed it: the knife and the spoon (fence_41, fence_42) tip over outward ahead of them and they walk toward the gap.
+// The lens goes with them, a little slower than they do (0.16 cm a frame; they go 0.21), rises 0.8 cm and does not turn.
+// Cut 05 stood 1.6 cm from fence_35 and 2.7 cm from fence_34 here: this is 1.7 cm further in, in line with the gap
+// between those two cards, and moves away from the fence as it goes. It looks 2 degrees further left than cut 05 did,
+// so the knife is whole in the frame.
+const BEHIND = { P: [-11.7, 5.6, 57.2], look: [-19.41, -16], v: 0.16 };
+const behindKey = (f) => { const n = f - C.out1, P = [BEHIND.P[0] + n * BEHIND.v * HEAD[0], BEHIND.P[1] + (0.8 * n) / 49, BEHIND.P[2] + n * BEHIND.v * HEAD[1]]; return { f, P, T: [P[0] + BEHIND.look[0], 3, P[2] + BEHIND.look[1]] }; };
+const SHOT2 = [3540, C.out1, 3580, C.jews, 3620].map(behindKey);
+// shot 3, "Jews" (f3604): side-on and level with them on the near side, 13 cm away, the lit city behind, their shadow
+// coming to the lens: the key image. The lens runs along the slot at a little over half their speed and closes in
+// 2.5 cm, because it has to stay inside the corner of the fence that they walk out through: it starts 18 degrees
+// behind side-on, and they gain on it, so that at the stop it is where cut 05's lens was (36 degrees behind). Further
+// out, or less far behind, fence_40 stands in the left of the frame as they reach the gate.
+// frame, degrees behind side-on, cm out from the slot: the lens is that far out, and as far back along the slot as puts
+// the point it looks at (0.6 cm behind the middle of their card) at that angle
+const SIDE = [[3588, 12.2, 13.2], [C.jews, 18.5, 12.9], [3620, 24.8, 12.3], [3636, 31, 11.5], [3642, 33.2, 11.15], [3648, 34.7, 10.75], [C.out2, 35.5, 10.4], [3670, 36.2, 9.9]];
+const SHOT3 = SIDE.map(([f, deg, d]) => { const [x, z] = SLOT.at(sAt(f) - 0.6 - d * Math.tan((deg * Math.PI) / 180)); return { f, P: [x + d * NEAR[0], 2.9 + 0.3 * clamp((f - C.jews) / 50), z + d * NEAR[1]], T: at(Math.min(f, C.out2), 2.9, -0.6) }; });
+// shot 4, the second "out" (f3654, the frame they stop): the edge of the cloth, from just outside it, low, looking back
+// in at the city, the couple in profile from a little ahead. The push on "here"; the lens pushes in 3 cm to f3701.
+const SHOT4 = [
+  { f: 3608, P: [-49.9, 3.8, 57], T: [-38.4, 2.6, 41.4] },
+  { f: C.thirties, P: [-48.9, 3.7, 55], T: [-39.5, 2.6, 41] },
+  { f: 3660, P: [-47.75, 3.6, 52.7], T: [-41, 2.6, 40.5] },
+  { f: C.problem, P: [-46.6, 3.5, 50.5], T: [-41, 2.6, 40.5] },
+  { f: 3726, P: [-45.95, 3.5, 49.25], T: [-41, 2.6, 40.5] },
+];
+// shot 5, "problem" (f3702): behind them, looking out past the edge (cut 05's keys and velocity, exactly, to "go").
+// Then the lens rises where it is, over the tops of the fence, and turns out to the dark room, where the other tables
+// come up from "whole". It stays inside the fence and holds the room to f3839 (section 9 cuts in at f3840). By f3815,
+// when the two gate cards stand up again, they and the couple are under the bottom of the frame.
+const up4 = (f, P, deg, pitch, L) => ({ f, P, T: look(P, deg, pitch, L) });
+const SHOT5 = [
+  ...KEYS_05.slice(i05(C.out2), i05(C.go)), pin05(C.go),
+  up4(3768, [-34.5, 17.5, 49.9], 47, -10.5, 40),
+  up4(3800, [-34.4, 27.2, 50.1], 38.5, -7.5, 50),
+  up4(3818, [-34.4, 32, 50.2], 33.5, -6.5, 60),
+  up4(3848, [-34.4, 35.5, 50.3], 28, -6, 60),
+];
+const float8 = (f) => joinFloat(F0, F1, f);
+const SHOTS = shots([{ f: F0, keys: SHOT1, float: float8 }, { f: C.out1, keys: SHOT2, float: float8 }, { f: C.jews, keys: SHOT3, float: float8 }, { f: C.out2, keys: SHOT4, float: float8 }, { f: C.problem, keys: SHOT5, float: float8 }]);
+export const CAM_KEYS = SHOT5;                                        // the key list of the section's last shot
+export const camAt = SHOTS.camAt, CUTS = SHOTS.CUTS;
 
 export const BEATS = [
   [F0, "(start)", "the candle settles; the open hand's fingers lie back and it slides out over the near edge on its sleeve"],

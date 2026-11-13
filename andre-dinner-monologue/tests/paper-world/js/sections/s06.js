@@ -6,7 +6,7 @@
 // towers right behind the cutlery. (u, v) below are centimetres along that wall and out from the fence line.
 import { CUES } from "../cues.js";
 import { clamp, lerp, smooth, smoother, spring } from "../kit.js";
-import { leg, walker, camRaw, camFrom, handover } from "./lib.js";
+import { leg, walker, camRaw, camFrom, handover, hermite } from "./lib.js";
 import * as S5 from "./s05.js";
 
 export const F0 = 2544, F1 = 3130;
@@ -207,7 +207,16 @@ export const CAM_KEYS = [
   { f: C.prison2, P: orbit(9.5, 42.5, 23), T: hd(-2) },
   { f: 3166, P: orbit(12.5, 38.5, 23.8), T: hd(-1.5) },
 ];
-export const camAt = (f) => camFrom(CAM_KEYS, f, lerp(1, 0.5, smooth((f - F0) / 60)));      // the float eases to half of section 5's
+// The dive from the high wide to the wall (f2544 to "camp", f2636) is the same spline read at another pace (camera pass,
+// Nov 13 2026): the path, its shape and the frame it lands on are the old ones, but it leaves the high hold two frames
+// sooner, holds 4.2 cm a frame (it peaked at 4.8) and slows early for the turn onto the wall, so the view never turns
+// 1.6 degrees a frame (it turned 2.6). It cannot land later: the first wall segment starts to rise on the frame it
+// lands. DIVE: [frames after f2544, where on the old spline the lens is then, in old frames].
+const DIVE = [[0, 2544], [1, 2545.93], [2, 2547.69], [3, 2549.33], [4, 2550.87], [5, 2552.4], [6, 2553.93], [7, 2555.47], [8, 2557.02], [12, 2563.33], [16, 2569.3], [20, 2574.04],
+  [24, 2578.17], [28, 2582.12], [32, 2586.15], [36, 2590.43], [40, 2594.38], [44, 2597.71], [48, 2600.45], [52, 2602.86], [56, 2605.13], [60, 2607.4], [64, 2609.87], [68, 2612.99],
+  [72, 2617.13], [76, 2621.56], [80, 2625.54], [84, 2628.96], [88, 2632.27], [92, 2636]].map(([i, t]) => ({ f: F0 + i, P: [t] }));
+const diveT = (f) => (f <= F0 || f >= DIVE[DIVE.length - 1].f ? f : hermite(DIVE, f, "P", 0));
+export const camAt = (f) => camFrom(CAM_KEYS, diveT(f), lerp(1, 0.5, smooth((f - F0) / 60)));      // the float eases to half of section 5's
 
 export const BEATS = [
   [F0, "I think", "citizens spring up at the heads of their slots, one every two frames, and come out again, each pushing a brick"], [C.camp, "camp", "the first wall segment rises in front of the cutlery as the first brick arrives"],
