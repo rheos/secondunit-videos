@@ -16,16 +16,22 @@ tags:
   era: [1900-1945]
   motion: [moving camera]
   colour: [limited palette]
-  engine: [threejs]
+  engine: [blender, threejs]
   use: [music video]
 status: test
-engine: three.js
+engine: blender + three.js
 project: bobwiseman-new-city-constructivist
 code:
-  path: bobwiseman-new-city-constructivist/js/
-  flag: "?v=2 (v1 board: no flag); ?pal=<name> picks a palette"
+  path: bobwiseman-new-city-constructivist/blender/newcity_blender.py
+  flag: "Blender: -- --stills <frames> or blender/render_chunks.sh <take>; three.js: ?v=2, ?pal=<name>, ?finish=print"
   page: bobwiseman-new-city-constructivist/newcity.html
   note: >-
+    Blender 4.5 EEVEE is the reference build (Robin's pick, 2026-11-12). newcity_blender.py ports story2.js line for
+    line under a y-up root empty: a real sun with cast shadows thresholded into three inks (Diffuse > Shader to RGB >
+    two steps, plus world noise), the door wave in geometry nodes off Scene Time, words keyed at their exact onsets,
+    EEVEE depth of field matched to the three.js CoC, motion blur, and the paper, weave, projection pass and vignette
+    in the compositor. About 1.2 s a frame at 720p; render_chunks.sh renders 78-frame chunks with pauses (long EEVEE
+    runs have crashed this Mac). The three.js v2 (js/) is the fast version with the same finish.
     story2.js holds the four shots as pure functions of song time; ink.js thresholds real models into three inks from
     one fixed light (face normals from screen derivatives, so instanced and skinned meshes work); type.js turns Anton
     outlines into flat or extruded meshes; main.js does the colour arc, sub-frame motion blur, depth of field from the
@@ -37,7 +43,8 @@ rules:
   - Type is printed flat on surfaces (street cards, lintels, bars, slabs), never floating facing the camera
   - Camera low, wide and rolled; it skims printed surfaces at grazing angles and streams past dense rows of objects
   - Each word is stamped on its vocal-stem onset; the camera is placed so the word is ahead of it, not behind a nearer prop
-  - Paper is an embossed, lit card tooth fixed to the screen, multiplied over everything and showing through dark ink
+  - Paper is an embossed card tooth fixed to the screen, under the print: full on the open backdrop, about 30% on objects
+  - Projected, not painted: inks lifted to charcoal (about 30-55/255) by a veil of the blurred frame, bright paper glowing over dark edges
   - The palette drifts cool to warm across the piece; the motif colour grows on what is being built
 palette:
   - "#e6e5dc"
@@ -54,12 +61,18 @@ proof:
   issue: rheos/secondunit-videos#502
   pr:
     - rheos/secondunit-videos#503
+    - rheos/secondunit-videos#506
   renders:
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4
+    - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-d_f0-f468_24fps_review.mp4
+    - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-blender-e_f0-f468_24fps_review.mp4
 verdict: >-
   Robin, 2026-11-12, on the 19.5 s cobalt cut (v2-cobalt-b): it lands, keep it. Next: the same test in Blender for
   comparison. On v1 (flat silhouettes, words facing the camera) he said it missed the essence: the 3D build, the
-  printed type at grazing angles and the paper texture.
+  printed type at grazing angles and the paper texture. Engine comparison (#505), same 19.5 s and same finish on both
+  (three.js v2-cobalt-d, Blender constructivist-blender-e): Robin picked Blender as closer to What Barry Says. Along the
+  way he moved the paper under the print ("more present on the backdrop... the elements are holographically coming
+  away from the backdrop") and asked for a projected feel, "not so opaque but not transparent either".
 related:
   - toon-cards
   - perspective-illusion
