@@ -1,0 +1,109 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>loopnoise demo</title>
+<!-- Proves tools/canvas-loop/loopnoise.js: an ink-blot field with contour lines, monochrome, that drifts
+     and changes shape for the whole loop and still meets its first frame exactly.
+     Render:  node tools/canvas-loop/loop-render.mjs tools/canvas-loop/demo-loopnoise.html <out dir>
+     Control: add  --q noise=time  and the same field runs on plain time-based noise (noise3D at z = t),
+              which drifts at the same speed but never comes back, so the seam test fails. -->
+<style>html, body { margin: 0; background: #111; } canvas { display: block; }</style>
+<canvas id="c"></canvas>
+<script src="../motion-lab/vendor/remotion-noise.min.js"></script>
+<script src="loopnoise.js"></script>
+<script>
+(() => {
+  const q = new URLSearchParams(location.search);
+  const W = +q.get('w') || 720, H = +q.get('h') || 1280, LOOP = +q.get('sec') || 8;
+  const TIME = q.get('noise') === 'time';             // the control: plain time noise, does not loop
+  const cv = document.getElementById('c'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d');
+  const PAPER = '#efebe3', INK = '#151413';
+
+  const R = 0.55;                                      // loop radius: how far the field travels per loop
+  const SPEED = 2 * Math.PI * R / LOOP;                // the same speed through noise space, per second
+  const CELL = 4, PAD = 24, SCALE = 1 / 300;           // field grid in px, margin for the camera wobble
+  const GX = Math.ceil((W + 2 * PAD) / CELL) + 1, GY = Math.ceil((H + 2 * PAD) / CELL) + 1;
+  const F = new Float32Array(GX * GY);
+  const LEVELS = [-0.55, -0.42, -0.29, -0.16, -0.03, 0.10, 0.23];   // contour lines
+  const BLOT = 0.30;                                   // the field above this is solid ink
+
+  // fbm on plain 3D noise with z = time: the control
+  function timeFbm(x, y, t, octaves = 3) {
+    let sum = 0, amp = 1, norm = 0, f = 1;
+    for (let o = 0; o < octaves; o++) {
+      sum += amp * RNoise.noise3D('ink', x * f + o * 31.7, y * f - o * 17.3, t * SPEED * f);
+      norm += amp; amp *= 0.5; f *= 2;
+    }
+    return sum / norm;
+  }
+  function field(t) {
+    const ph = LoopNoise.phase(t, LOOP);
+    for (let j = 0; j < GY; j++) for (let i = 0; i < GX; i++) {
+      const x = (i * CELL - PAD) * SCALE, y = (j * CELL - PAD) * SCALE;
+      F[j * GX + i] = TIME ? timeFbm(x, y, t) : LoopNoise.loopFbm2(x, y, ph, R, 'ink', 3);
+    }
+  }
+  function camera(t) {
+    if (TIME) return [10 * RNoise.noise2D('cam:x', t * SPEED, 0), 10 * RNoise.noise2D('cam:y', t * SPEED, 0)];
+    return LoopNoise.loopWander(LoopNoise.phase(t, LOOP), 0.6, 10, 'cam');
+  }
+
+  // The blots: the field thresholded with a soft edge into a small image, scaled up with smoothing.
+  const small = document.createElement('canvas'); small.width = GX; small.height = GY;
+  const sg = small.getContext('2d'), img = sg.createImageData(GX, GY);
+  function blots() {
+    for (let k = 0; k < F.length; k++) {
+      const a = Math.min(1, Math.max(0, (F[k] - BLOT) / 0.025));
+      img.data[4 * k] = 0x15; img.data[4 * k + 1] = 0x14; img.data[4 * k + 2] = 0x13; img.data[4 * k + 3] = Math.round(a * 255);
+    }
+    sg.putImageData(img, 0, 0);
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(small, -PAD - CELL / 2, -PAD - CELL / 2, GX * CELL, GY * CELL);
+  }
+  // Contour lines by marching squares on the same grid.
+  function contours(level) {
+    g.beginPath();
+    const at = (a, b) => (level - a) / (b - a);
+    for (let j = 0; j < GY - 1; j++) for (let i = 0; i < GX - 1; i++) {
+      const a = F[j * GX + i], b = F[j * GX + i + 1], c = F[(j + 1) * GX + i + 1], d = F[(j + 1) * GX + i];
+      const idx = (a > level) | ((b > level) << 1) | ((c > level) << 2) | ((d > level) << 3);
+      if (idx === 0 || idx === 15) continue;
+      const x0 = i * CELL - PAD, y0 = j * CELL - PAD;
+      const T = [x0 + CELL * at(a, b), y0], Rr = [x0 + CELL, y0 + CELL * at(b, c)];
+      const B = [x0 + CELL * at(d, c), y0 + CELL], L = [x0, y0 + CELL * at(a, d)];
+      const seg = (p, r) => { g.moveTo(p[0], p[1]); g.lineTo(r[0], r[1]); };
+      switch (idx) {
+        case 1: case 14: seg(L, T); break;
+        case 2: case 13: seg(T, Rr); break;
+        case 3: case 12: seg(L, Rr); break;
+        case 4: case 11: seg(Rr, B); break;
+        case 6: case 9: seg(T, B); break;
+        case 7: case 8: seg(L, B); break;
+        case 5: seg(L, T); seg(Rr, B); break;
+        case 10: seg(T, Rr); seg(L, B); break;
+      }
+    }
+    g.stroke();
+  }
+
+  function draw(t) {
+    field(t);
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.fillStyle = PAPER; g.fillRect(0, 0, W, H);
+    const [dx, dy] = camera(t);
+    g.setTransform(1, 0, 0, 1, dx, dy);
+    blots();
+    g.strokeStyle = INK; g.lineCap = 'round'; g.lineJoin = 'round';
+    LEVELS.forEach((lv, k) => { g.lineWidth = 1.2 + 0.25 * k; g.globalAlpha = 0.55 + 0.06 * k; contours(lv); });
+    g.globalAlpha = 1;
+  }
+
+  window.__ready = Promise.resolve(true);
+  window.__framePNG = (t) => { draw(t); return cv.toDataURL('image/png'); };
+  if (!q.has('offline')) {                             // opened by hand: play it
+    const t0 = performance.now();
+    const tick = () => { draw(((performance.now() - t0) / 1000) % LOOP); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+})();
+</script>
