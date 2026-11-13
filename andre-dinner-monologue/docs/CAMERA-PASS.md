@@ -3,7 +3,7 @@
 Status: Robin watched cut 06 and rejected it ("I don't think anything about that went correctly").
 At his word the film is back to cut 05's camera and tableware; cut 06's camera is in history at
 commit cef1638. When the camera note is picked up again, it is worked spot by spot with him, starting
-at 0:21, from pictures, not from this document's rules. Two of his notes on it: never cut to an empty table, and a cut should
+at 0:00 (Robin, Nov 13), from pictures, not from this document's rules. Two of his notes on it: never cut to an empty table, and a cut should
 be a transition, not a plain cut. See LOOKS.md §8. Everything below is the plan as it was.
 
 Mark Achbar's note on cut 03, paraphrased: it feels a bit like a video game; the shot does not have to

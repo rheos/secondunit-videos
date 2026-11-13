@@ -307,7 +307,7 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
     05 (the section files match commit 2a3f92a); cut 06's camera stays in history at commit cef1638 if
     any piece of it is wanted. The new checks (NEAR, declared cuts) remain and change no picture. His notes so far: a cut must never land on an empty table ("That's stupid"), and
     cuts should be transitions ("I don't want it just to sort of cut. I want it to transition somehow").
-    He paused it on Nov 13 to come back in a few days; start again at 0:21, from pictures, one spot at a
+    He paused it on Nov 13 to come back in a few days; start again at 0:00 (Robin, Nov 13), from pictures, one spot at a
     time. What follows is what cut 06 did, for the record. Robin's ruling: cutting is not the default. He
     likes the moves where the lens pulls out and comes down on a new place, above all 1:43 to 1:50 (up to the
     high wide, down on the wall and the guards: "I don't want to cut to that"), and picked the others one by
