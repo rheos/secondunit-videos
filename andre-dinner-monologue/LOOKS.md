@@ -300,7 +300,18 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
     the tree", and "because this is a 1981 New York, it could have the Twin Towers in it"). At the
     end the Twin Towers fold flat sideways instead of sinking, our call, so the image does not read
     as September 11. On the audio he decided to credit the film and not pursue rights.
-    Mark's camera note is still open.
+    Mark's camera note is answered in cut 06 (below).
+  - Cut 06 (Nov 13), the camera pass, `docs/CAMERA-PASS.md`. Robin's ruling: cutting is not the default. He
+    likes the moves where the lens pulls out and comes down on a new place, above all 1:43 to 1:50 (up to the
+    high wide, down on the wall and the guards: "I don't want to cut to that"), and picked the others one by
+    one: the climb over New York, the drop to the fence, wall to head, up over the palm, down to the couple.
+    He did not keep the swoop from the bathtub to the ranks. The swings at table height became 15 cuts. The
+    1:46 dive is not a cut and turns more gently (peak 2.6 down to 1.6 degrees a frame); it lands on the same
+    frame, because the wall starts to rise as it lands. The lens now clears every piece by 3 cm (`NEAR=3`
+    prints nothing). The three blurred photographs of real tableware near the lens (ours, test 03) are never
+    drawn: Robin saw the fork at 1:19 as hovering, and the lens went through it. Ours, not asked: the cut on
+    "escape" at 2:18 in place of the fast sideways move as the pine opens. Known costs: a second of bare cloth
+    after the cut at 0:21 (the machine starts off the table), the sapling reads small in the redwood shot.
   - Cut 05 is up: https://youtu.be/730T3xJ5LTY, Novadiem Studio, unlisted, 12:02 pm Nov 12, link
     to Telegram, from commit dfbfa92, with the fuller credit in the description (the film, Louis
     Malle, Andre Gregory, Wallace Shawn). Cut 03 (https://youtu.be/CYw1f0Y12WY) is still up too,
