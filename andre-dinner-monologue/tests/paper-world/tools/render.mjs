@@ -56,6 +56,9 @@ if (process.env.NAMES) {
   }
   for (const r of rows) if ((r.f - list[0]) % (+process.env.SPEED > 1 ? +process.env.SPEED : 12) === 0) console.log(`f${r.f}  ${r.v.toFixed(3)} cm/f  turn ${r.ang.toFixed(2)} deg/f  height ${r.y.toFixed(1)}  to target ${r.dist.toFixed(1)}  ${"#".repeat(Math.min(60, Math.round(r.v * 12)))}`);
   console.log(`camera speed: min ${minV.toFixed(3)}  max ${maxV.toFixed(2)} cm/frame; largest change ${maxA.toFixed(3)} cm/frame^2; ${flags.length ? "FLAGS:\n" + flags.join("\n") : "no dead stops, no jumps"}`);
+} else if (process.env.NEAR) {      // NEAR=1.2: every frame where the lens is inside or within that many cm of a visible piece
+  const lim = +process.env.NEAR > 0 && +process.env.NEAR < 50 ? +process.env.NEAR : 1.2;
+  for (const f of list) { const r = await pg.evaluate(([f, lim]) => window.camNear(f, lim), [f, lim]); if (Object.keys(r).length) console.log(`f${f}`, JSON.stringify(r)); }
 } else if (process.env.PX) {
   for (const f of list) console.log(`f${f}`, JSON.stringify(await pg.evaluate((f) => window.figurePx(f), f)));
 } else {

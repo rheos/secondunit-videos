@@ -100,6 +100,23 @@ window.figurePx = (f) => {
     if (za.z > 1 || Math.abs(za.x) > 1.05 || Math.abs(za.y) > 1.2) continue; out[fig.root.name || fig.name] = Math.round(Math.abs(zb.y - za.y) * H / 2); }
   return out;
 };
+// what the lens is inside of or grazing at frame f: every visible mesh whose own box comes within lim cm of the camera
+// (measured in the mesh's own space, so a thin card's box is thin). The cloth, the room and the far cards are left out.
+window.camNear = (f, lim = 1.2) => {
+  const cam = setState(f, [0, 0, 0]); scene.updateMatrixWorld(true);
+  const P = new THREE.Vector3(...cam.P), p = new THREE.Vector3(), q3 = new THREE.Vector3(), inv = new THREE.Matrix4(), sc = new THREE.Vector3(), out = {};
+  scene.traverse((o) => {
+    if (!o.isMesh || !o.geometry) return;
+    for (let a = o; a; a = a.parent) if (!a.visible) return;
+    const m = o.material; if (m && m.transparent && m.opacity !== undefined && m.opacity < 0.05) return;
+    let name = ""; for (let a = o; a && !name; a = a.parent) name = a.name; if (!name || /^(cloth|room|world|slots)|far_tables|glint|shadow/i.test(name)) return;
+    if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    p.copy(P).applyMatrix4(inv.copy(o.matrixWorld).invert()); o.geometry.boundingBox.clampPoint(p, q3);
+    sc.setFromMatrixScale(o.matrixWorld); const d = Math.hypot((p.x - q3.x) * sc.x, (p.y - q3.y) * sc.y, (p.z - q3.z) * sc.z);
+    if (d < lim && (out[name] === undefined || d < out[name])) out[name] = +d.toFixed(2);
+  });
+  return out;
+};
 
 // what fell back to a stub or was left out (story.js FAILED), and the registry's pieces: NAMES=1 node tools/render.mjs
 window.paperFailed = () => S.FAILED.map((x) => ({ ...x }));
