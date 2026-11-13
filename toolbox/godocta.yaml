@@ -1,0 +1,33 @@
+slug: godocta
+name: Octa structure studio (makevoid's godocta)
+kind: toolkit
+status: candidate
+does: Builds dioramas out of truncated octahedrons (14-faced cells that tile space). A Go generator turns scene recipes written as code into colored .octa files, a Godot 4 app assembles them cell by cell from the bottom up, and a headless CPU renderer makes preview sheets and a showcase MP4 of orbiting builds.
+keywords:
+- 3d
+- procedural
+- voxel
+- turntable
+- orbit
+- transition
+- motion-blur
+- draw-on
+- review
+- render
+fits:
+- the showcase cut, ported to three.js or HyperFrames, for Quiver's look reel and any prop or product turnaround
+- bottom-up assembly timing as a draw-on for 3D builds
+- an Academy example of the render-look-fix loop (give the agent a cheap headless render)
+- not a look of its own; the builds read as bead or brick toys
+deterministic: 'yes'
+how: 'Not installed or run by us. Two pieces worth porting, both in plain Go. (1) Showcase cut, `gen/cmd/octapreview/video.go`: one orbiting shot per build (default 4 s, 150 degrees), orbit speed 0.1 + 0.9*((1+cos(2*pi*u))/2)^4 over shot progress u, integrated and normalised, so the camera is fast at both cuts and drifts mid-shot; builds swap in a 0.3 s cross-fade under motion blur (at least 8 sub-frames per frame) while the spin carries on, each shot starting with 1 s of assembly left. (2) Assembly, `shaders/cell_common.gdshaderinc` and `AssemblyTimeline`: cells released by rank, bottom-up courses, each settling with a cubic ease-out over about 1.2 s; whole build takes 4 * cbrt(cells / 1729) seconds, clamped to 4-24 s. Run as given: `bin/run` (Godot 4.4+), `cd gen && go run ./cmd/octapreview -video out.mp4 castle arena` for a showcase (needs ffmpeg).'
+cost: free. Godot and Go, local CPU. Porting either move is one session, no credits.
+url: https://github.com/makevoid/godocta
+detail: MIT. Go 1.22+ standard library only; Godot 4.4+ with GL Compatibility, no addons. 85 builds checked in, about 85,000-150,000 cells each. The Fable 5.2 vs Opus 5.5 challenge builds (30 scenes, about 31,000 lines of Go) are not in the repo as of Nov 11; only an ideas list names them. The repo's `.agents/skills/sunburst-images` is an image-generation skill for its UI art, not read.
+source: x.com/makevoid/status/2120532009344696615
+related:
+- threejs
+- hyperframes
+- make-an-anime
+- swift-noimage-skill
+added: '2026-11-12'

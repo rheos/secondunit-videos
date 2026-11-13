@@ -1,0 +1,22 @@
+{
+  "endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+  "song_frames": [
+    1488,
+    1608
+  ],
+  "input": {
+    "prompt": "One continuous 5 second shot, vertical 9:16, no cuts. @Image1 is the character sheet for the king: keep him exactly like it. @Image2, @Image3 and @Image4 are keyframes of this shot at 0, 2.5 and 5 seconds: match their staging, set, cast and camera. A sunlit palace terrace: pale stone tiles, cream columns, brick and stone walls, a tall wooden shutter, a gold rail and a red carpet. 0 to 1.5 s: close on the king, eyes closed, he lets out a long breath of relief and smiles, swaying slightly. 1.5 to 3 s: the camera eases back behind the gold rail to show the royal family in a row on the terrace: the king, a princess in a pink gown waving, a prince in a blue uniform behind a brass telescope on a wooden tripod, and a queen in a long red gown. 3 to 5 s: the camera glides in to the prince at the telescope, which points toward the camera; he gasps with his mouth open while the princess beside him smiles. Painted 3D cartoon: round bean-shaped characters with black ink outlines, dot eyes and thin stick legs, warm late-afternoon light with soft shadows, rich colour, painterly texture like @Image1. No text, no speech, no music.",
+    "image_urls": [
+      "https://v3b.fal.media/files/b/0ab1bf02/ekFhd4sHh4uDnNmKwlm2F_sheet.png",
+      "https://v3b.fal.media/files/b/0ab1bf03/wSz7EKeUF-JlW9apaB2hW_key1.jpg",
+      "https://v3b.fal.media/files/b/0ab1bf03/huAjD2EKzMe9bJbTsExvU_key2.jpg",
+      "https://v3b.fal.media/files/b/0ab1bf03/Tb_h3yrFNlO0Q-yuYADvd_key3.jpg"
+    ],
+    "task": "reference",
+    "aspect_ratio": "9:16",
+    "resolution": "720p",
+    "duration": "5",
+    "generate_audio": false
+  },
+  "out": "../out/lib_seedA-keyframes_f01488-f01608_24fps_draft.mp4"
+}
