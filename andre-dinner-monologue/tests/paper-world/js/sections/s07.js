@@ -4,7 +4,7 @@
 // it, raises the pine and fells the wall.
 import { CUES } from "../cues.js";
 import { clamp, lerp, smooth, smoother, spring } from "../kit.js";
-import { camFrom, handover, crane, shots } from "./lib.js";
+import { camFrom, handover, crane } from "./lib.js";
 import * as S6 from "./s06.js";
 
 export const F0 = 3130, F1 = 3397;
@@ -79,14 +79,7 @@ export const HANDC = [20.8, 1, 17.5];
 const aim = (az, s) => { const a = (az * Math.PI) / 180; return [HANDC[0] + s * Math.cos(a), HANDC[1], HANDC[2] - s * Math.sin(a)]; };
 const whole = (d, el, az, s) => { const e = (el * Math.PI) / 180, a = (az * Math.PI) / 180, c = aim(az, s); return [c[0] + d * Math.cos(e) * Math.sin(a), c[1] + d * Math.sin(e), c[2] + d * Math.cos(e) * Math.cos(a)]; };
 const HOLD = whole(56, 59, 24, 0.3), CLOSE = whole(56.5, 62, 23.5, 0.1), CLOSE_T = aim(23.5, 0.1), DRIFT = CLOSE.map((v, k) => (v - HOLD[k]) / 19);      // cm a frame, carried into the crane
-// Two shots (camera pass, Nov 13 2026). The old camera craned from the hand out to the wide in 40 frames, sideways at
-// 50 cm (3 cm and 3 degrees a frame); now the lens holds on the hand and CUTS on "escape" to where that crane ended.
-// OLD_CRANE is the old crane's 19 keys (f3325 to f3361): its first and its last two are still read, so the hold before it
-// and the drift after it are the old ones to the last bit.
-const OLD_CRANE = Array.from({ length: 19 }, (_, i) => { const f = CR0 + 2 * (i + 1), e = smoother((f - CR0) / (CR1 - CR0)), et = Math.min(1, e * 1.15), h = clamp((16 - i) / 3);
-  return { f, P: OLD_CLOSE.map((v, k) => lerp(v, WIDE[k], e) + (CLOSE[k] + DRIFT[k] * (f - CR0) - v) * (1 - e) * h), T: OLD_CLOSE_T.map((v, k) => lerp(v, pineMid[k], et) + (CLOSE_T[k] - v) * (1 - et) * h) }; });
-// shot 1, to "escape": the old keys as far as the hold on the whole hand, then the hold's own drift carried on to the cut
-const HAND_KEYS = [
+export const CAM_KEYS = [
   handover(S6.CAM_KEYS, F0),
   { f: 3166, P: S6.CAM_KEYS[S6.CAM_KEYS.length - 1].P, T: S6.CAM_KEYS[S6.CAM_KEYS.length - 1].T },
   // f3166-f3207: back from the head and up over the near edge, to the whole hand, looking down 46 degrees
@@ -97,24 +90,18 @@ const HAND_KEYS = [
   // f3260-f3331: holds on the whole hand, drifting up and in
   { f: C.hand, P: HOLD, T: aim(24, 0.3) },
   { f: CR0, P: CLOSE, T: CLOSE_T },
-  OLD_CRANE[0],
-  { f: CR0 + 26, P: OLD_CRANE[0].P.map((v, k) => v + DRIFT[k] * 24), T: OLD_CRANE[0].T },
-];
-// shot 2, from "escape" (the pine starts to open, the wall to fall, the candle to flare): the wide the old crane ended on,
-// 50 cm up over the near edge, the whole pine in the tall frame. It comes the last 8 cm of the old crane's line at
-// 0.2 cm a frame and is on the old spline from f3359: at f3397 the lens is where it was, moving as it was (joins.js
-// reads this list there, so it must stay the last shot's keys)
-const INTO = WIDE.map((v, k) => v - OLD_CLOSE[k]), INTO_L = Math.hypot(...INTO);
-export const CAM_KEYS = [
-  { f: CR0, P: OLD_CRANE[17].P.map((v, k) => v - (INTO[k] / INTO_L) * 0.2 * (OLD_CRANE[17].f - CR0)), T: pineMid },
-  OLD_CRANE[17], OLD_CRANE[18],
+  // f3331-f3397: cranes up and back with the pine, so its top stays in the tall frame. It starts to move eight frames
+  // before "escape" and is eased along its line (no snap); then it drifts. The line was drawn from the old close-up
+  // (OLD_CLOSE); it now leaves from the whole-hand frame and joins that line by the 17th key, so from f3359 on the
+  // camera is the one sections 8 to 10 were built on, to the last bit. The hold's drift is carried into the crane's
+  // first frames, so the lens does not stall where the two meet
+  ...Array.from({ length: 19 }, (_, i) => { const f = CR0 + 2 * (i + 1), e = smoother((f - CR0) / (CR1 - CR0)), et = Math.min(1, e * 1.15), h = clamp((16 - i) / 3);
+    return { f, P: OLD_CLOSE.map((v, k) => lerp(v, WIDE[k], e) + (CLOSE[k] + DRIFT[k] * (f - CR0) - v) * (1 - e) * h), T: OLD_CLOSE_T.map((v, k) => lerp(v, pineMid[k], et) + (CLOSE_T[k] - v) * (1 - et) * h) }; }),
   { f: CR1, P: WIDE, T: pineMid },
   { f: F1 + 8, P: [WIDE[0] - 1.5, WIDE[1] + 3.5, WIDE[2] + 5], T: [pineMid[0], 31.5, pineMid[2]] },
 ];
 // the float is halved over the hold on the hand (f3190 to f3338), where the drift is 0.1 cm a frame: it is 0.5 at both joins
-const floatAt = (f) => 0.5 * (1 - 0.5 * smooth((f - 3190) / 20) * (1 - smooth((f - 3318) / 20)));
-const SHOTS = shots([{ f: F0, keys: HAND_KEYS, float: floatAt }, { f: C.escape, keys: CAM_KEYS, float: floatAt }]);
-export const camAt = SHOTS.camAt, CUTS = SHOTS.CUTS;
+export const camAt = (f) => camFrom(CAM_KEYS, f, 0.5 * (1 - 0.5 * smooth((f - 3190) / 20) * (1 - smooth((f - 3318) / 20))));
 
 export const BEATS = [
   [HEAD_DOWN, "(hold)", "the head, 36 frames under the bricks, folds back into the cloth"], [C.then, "And then", "the open hand slides in from the near edge on its sleeve"],

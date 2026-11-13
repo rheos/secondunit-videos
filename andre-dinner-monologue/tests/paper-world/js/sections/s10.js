@@ -8,7 +8,6 @@ import { clamp, lerp, smooth, smoother } from "../kit.js";
 import { camFrom } from "./lib.js";
 import { joinKey } from "./joins.js";
 import * as S5 from "./s05.js";
-import { towerClear } from "./s09.js";
 export { CUES };
 
 export const F0 = 4315, F1 = 4761;
@@ -120,11 +119,7 @@ export const CAM_KEYS = [
   { f: 4700, P: [-1.1, 187.7, 78.4], T: [-0.3, 0, -5.3] },
   { f: F1 + 8, P: [-0.5, 193.7, 72.5], T: [-0.2, 0, -6] },             // f4761 is the end of the film: no join, this key is mine
 ];
-// Camera pass, Nov 13 2026: the rise is kept as it was, one shot, no cuts. One fix: from the join to f4344 the lens passed
-// the near plate tower's bottom tier at 2.3 to 3 cm (the join itself stands 2.6 cm from it). Section 9's towerClear(f) is
-// added to the lens here too: a 1.3 cm sidestep away from the tower that is back to nothing, with no slope, by f4378.
-export const CUTS = [];
-export const camAt = (f) => { const c = camFrom(CAM_KEYS, f, 0.5), d = towerClear(f); c.P = c.P.map((v, i) => v + d[i]); return c; };
+export const camAt = (f) => camFrom(CAM_KEYS, f, 0.5);
 
 // ---------- hooks. Section 9 leaves the candle guttered and the picture grey-blue; whatever the flame, the fill and the
 // grade are at f4314 is where this section starts, and it holds that to "life", whether or not the earlier sections'

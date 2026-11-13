@@ -117,7 +117,7 @@ export async function build(X) {
   const lens = ["fg_glass", "fg_fork"].map((n) => reg.get(n));       // section 5's soft tableware: lens dressing for its own first leg, blobs from any other lens
   function update(f, jitter, cam) {
     if (f >= S3.F0 && f < S3.F1) for (const e of lens) e.set.hide();       // hidden for every frame of this section (as sections 1 and 2 do in theirs)
-    softG.visible = false;      // camera pass, Nov 13: no photographed tableware in the air (was: f >= SOFT.f0 && f < SOFT.f1)
+    softG.visible = f >= SOFT.f0 && f < SOFT.f1;
     if (softG.visible) { const d = SOFT.dim * X.now.level; softG.rotation.y = Math.atan2(cam.P[0] - SOFT.at[0], cam.P[2] - SOFT.at[1]); softM.color.setRGB(d, d * 0.94, d * 0.86); }
     const on = S3.shown(f);
     strip.visible = wheelG.visible = tv.g.visible = on; cold.visible = false; cold.intensity = 0;

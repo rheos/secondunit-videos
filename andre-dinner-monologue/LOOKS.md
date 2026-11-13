@@ -302,9 +302,10 @@ Robin, Nov 11 2026, about 8 pm Pacific, on `andre_paper-world-s06-s07-test01_f25
     as September 11. On the audio he decided to credit the film and not pursue rights.
     Mark's camera note is still open: cut 06 (below) was Robin's no.
   - Cut 06 (Nov 13), the camera pass, `docs/CAMERA-PASS.md`. REJECTED by Robin the same day: "I don't
-    think anything about that went correctly." Never uploaded. Its camera stays on the branch, to be
-    reworked spot by spot with him (he chose to keep the changes and alter them); cut 05's camera is at
-    commit 2a3f92a. His notes so far: a cut must never land on an empty table ("That's stupid"), and
+    think anything about that went correctly." Never uploaded. At his word ("just revert to the previous
+    take before you started doing video cuts") the camera and the tableware are back exactly as in cut
+    05 (the section files match commit 2a3f92a); cut 06's camera stays in history at commit cef1638 if
+    any piece of it is wanted. The new checks (NEAR, declared cuts) remain and change no picture. His notes so far: a cut must never land on an empty table ("That's stupid"), and
     cuts should be transitions ("I don't want it just to sort of cut. I want it to transition somehow").
     He paused it on Nov 13 to come back in a few days; start again at 0:21, from pictures, one spot at a
     time. What follows is what cut 06 did, for the record. Robin's ruling: cutting is not the default. He

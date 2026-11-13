@@ -5,7 +5,7 @@
 // x to the right, z toward the viewer (the near place setting is at +z, the far one at -z).
 import { CUES } from "../cues.js";
 import { clamp, lerp, smooth, spring, hash } from "../kit.js";
-import { SKIN, makePath, rev, leg, walker, mix3, crane, camRaw, camFrom, shots, RAMP } from "./lib.js";
+import { SKIN, makePath, rev, leg, walker, mix3, crane, camRaw, camFrom, RAMP } from "./lib.js";
 export { SKIN };
 
 export const F0 = 1800, F1 = 2544;
@@ -156,10 +156,7 @@ export function flameAt(f) {
   };
 }
 
-// ---------- the camera (camera pass, Nov 13 2026): four shots and the old move. The section CUTS in at f1800; the swings
-// round the tree man at table height (f1932 to f2196) are cuts to settled shots; from "where" on the lens is on the old
-// spline, after its whip turn, for the climb over the table as "New York" rises, the drop to the fence and the rise to
-// the high wide. CAM_KEYS is that old key list whole (joins.js and section 6 read it): shots 1 and 4 are read from it.
+// ---------- the camera: one move, keys on the cue frames, position P and target T splined in time
 const tmT = (f, dy = 2.5) => { const s = treemanAt(f); return [s.x, s.y + dy, s.z]; };
 const around = (deg, r, y) => [candle[0] + r * Math.cos(deg * Math.PI / 180), y, candle[1] + r * Math.sin(deg * Math.PI / 180)];
 const flame = [candle[0], 7, candle[1]];
@@ -169,8 +166,6 @@ export const CAM_KEYS = [
   { f: 1842, P: [-1, 5.6, -14], T: [22, 4, -46] },
   { f: C.expert, P: [-0.5, 5.4, -25.5], T: tmT(C.expert, 2.4) },
   { f: C.trees, P: [10, 4.6, -41], T: [28.5, 3.3, -48.5] },
-  // (the keys from here to f2192 are no longer on screen: shots 2 and 3 below replace them. They stay because the spline
-  // on either side of them is shaped by them)
   // f1930-f2110: beside him at his eye height as he comes in among the tableware; he passes the lens, the camera
   // swings round behind him, looks up the redwood as it shoots up, and comes back down to him at the bottle
   { f: 1944, P: [13.2, 4.5, -44.2], T: tmT(1944, 2.7) },
@@ -204,9 +199,8 @@ export const CAM_KEYS = [
   { f: 2256, P: [41, 43, 14], T: [11, 7, -20] },
   { f: 2300, P: [62, 64, 34], T: [8, 10, -24] },
   // f2300-f2466: down to citizen height at the fence
-  // (camera pass: this key was [45, 27, 10]; moved 3.6 cm in and up so the lens crosses the right fence 3 cm above the fork's tines, not 0.7)
-  { f: 2326, P: [41.5, 28, 10], T: [26, 4.5, -29] },
-  { f: 2346, P: [34.2, 7.6, -7.5], T: [29.5, 3.2, -32], mP: [3 * ((31.6 - 34.2) / 32), 3 * ((5.2 - 7.6) / 32), 3 * ((-11.5 - -7.5) / 32)] },      // mP: the tangent this key had before the key above moved, so the hold at the fence is the old one
+  { f: 2326, P: [45, 27, 10], T: [26, 4.5, -29] },
+  { f: 2346, P: [34.2, 7.6, -7.5], T: [29.5, 3.2, -32] },
   { f: 2378, P: [31.6, 5.2, -11.5], T: [30.6, 2.9, -34] },
   { f: C.leave2, P: [31.2, 4.3, -16.5], T: [31.5, 3.0, -36] },
   { f: C.theories - 8, P: [31.6, 4.2, -19.2], T: [32, 3.5, -38] },
@@ -216,38 +210,7 @@ export const CAM_KEYS = [
   { f: 2548, P: [3.6, 147, 108.6], T: [0, 10, 4.4] },
 ];
 export const camRaw5 = (f) => camRaw(CAM_KEYS, f);
-// shot 2, "trees" to "84" + 14: from the right edge of the table, off the tree man's slot (he has gone by, out of frame
-// to the left). The sapling springs a tier, 45 cm away; the lens pulls back to 57 cm and up from 9.5 to 16 cm and is
-// still 12 frames before the redwood swings up on "redwoods": all 45 cm of it in the tall frame, with the room's wall
-// behind its crown. The look is never more than 1 degree up, so the top of the frame stays 2 degrees or more under the
-// top edge of the room's wall (when the lens was low and looked up 24 degrees, a black band stood across the top of
-// the frame). The redwood stands about 26 frames before the cut.
-const TREE_KEYS = [
-  { f: C.trees, P: [40, 9.5, -12], T: [38.5, 5.5, -57.5] },
-  { f: C.redwoods - 12, P: [40, 16, -0.5], T: [38.5, 17, -57.5] },
-  { f: C.eighty4 + 18, P: [40.2, 16.7, 2.4], T: [38.5, 17.75, -57.5] },
-];
-// shot 3, "84" + 14 (he has stopped and is leaning on the stick) to "where": beside him at the bottle at his own
-// height, from the south-west (the far glass stands just out of frame to the left); from "backpack" it goes with him at
-// his pace, on a line parallel to his, so the view hardly turns: toward the candle, then south along the west side of
-// it while he walks round it
-const WALK_KEYS = [
-  { f: C.eighty4 + 14, P: [2.44, 5.35, -23.94], T: [15.8, 2.7, -28.4] },
-  { f: C.backpack - 7, P: [5, 5.1, -24.8], T: [15.8, 2.7, -28.4], mP: [0.015, 0, 0.07], mT: [0.015, 0, 0.07] },
-  { f: C.tomorrow, P: [-0.2, 5.2, -18.2], T: [10.4, 3.8, -20.6] },
-  { f: 2130, P: [-3.3, 5.2, -14.4], T: [7.5, 4.3, -18] },
-  { f: 2150, P: [-2.8, 5.2, -11.4], T: [8, 4.6, -15] },
-  { f: 2170, P: [-1, 5.3, -10], T: [9.6, 4.7, -14] },
-  { f: C.where, P: [1, 5.4, -8], T: [11.1, 4.8, -13] },
-  { f: C.where + 12, P: [2.1, 5.5, -6.9], T: [11.7, 4.8, -12.6] },
-];
-const SHOTS = shots([
-  { f: F0, keys: CAM_KEYS, float: 1 },                 // 1. low across the table to the far corner; the tree man comes in by the sapling (as it was)
-  { f: C.trees, keys: TREE_KEYS, float: 1 },           // 2. the sapling springs; the redwood shoots up
-  { f: C.eighty4 + 14, keys: WALK_KEYS, float: 1 },    // 3. him at the bottle, leaning; with him to the candle
-  { f: C.where, keys: CAM_KEYS, float: 1 },            // 4. the old move from here to the end of the section
-], true);
-export const camAt = SHOTS.camAt, CUTS = SHOTS.CUTS;
+export const camAt = (f) => camFrom(CAM_KEYS, f);
 
 // the beat table, for the README and for blocking.json
 export const BEATS = [

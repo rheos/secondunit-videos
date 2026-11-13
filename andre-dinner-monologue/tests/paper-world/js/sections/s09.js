@@ -7,7 +7,7 @@
 // Units: centimetres, y up, the cloth is y = 0, x to the right, z toward the viewer.
 import { CUES } from "../cues/s09.js";                  // generated: $PY tools/onsets.py 09 (from tools/cues/s09.json)
 import { clamp, lerp, smooth, smoother, spring, hash } from "../kit.js";
-import { shots } from "./lib.js";
+import { camFrom, camRaw } from "./lib.js";
 import { joinKey, joinFloat } from "./joins.js";
 import * as S5 from "./s05.js";
 export { CUES };
@@ -137,25 +137,26 @@ export function flame(f, fl) {
 export const fill = (f) => (f < E ? 1 : lerp(1, 0.8, drainAt(f)));
 export const grade = (f) => { if (f < E) return null; const d = drainAt(f); return { expo: lerp(1, DRAIN.expo, d), tint: DRAIN.tint.map((v) => lerp(1, v, d)), sat: lerp(1, DRAIN.sat, d) }; };
 
-// ---------- the camera (camera pass, Nov 13 2026): one shot. The section CUTS in at F0 (section 8 ends on the dark room):
-// the lens is already over the near left corner of the table, three-quarters on to the city, and comes slowly down and
-// back into that corner while the slot is cut and the stem starts up on "1960s". This replaces cut 05's arc back from
-// the dark room over the left fence (2 degrees a frame). From f3972 the keys are cut 05's, and the last is the join at F1
-// (position, target and velocity), which section 10 continues from.
-// Clearance: cut 05's lens stood 2.4 to 3 cm from fence_39 and fence_40 from f3942 to f4026. The four keys from f3972 to
-// "burst" are 0.6 to 1 cm further in (x only); everything from "human" on is as it was.
-const J1 = joinKey(F1), [bx, bz] = BURST.at;
-const P72 = [-37.1, 11.4, 52.2], P90 = [-36.9, 12.3, 53.8];       // cut 05: [-38.1, 11.4, 52.2], [-37.9, 12.3, 53.8]
+// ---------- the camera: the first key is the join at F0, the last is the join at F1 (position, target and velocity).
+// f3840 to f3958: one arc. It turns from the dark room through the far end of the table to the middle of the city while
+// it rises over the cutlery of the left fence (26 cm; the cards are 20) and swoops down inside it to 11 cm.
+const J0 = joinKey(F0), J1 = joinKey(F1), [bx, bz] = BURST.at;
+const P72 = [-38.1, 11.4, 52.2], P90 = [-37.9, 12.3, 53.8];
+const P_ARC = [J0, { f: 3862, P: [-58.6, 20.5, 20.5] }, { f: 3884, P: [-55, 24, 27] }, { f: 3904, P: [-48.5, 26.5, 34] }, { f: 3922, P: [-41.5, 26.5, 40.5] },
+  { f: 3940, P: [-38.5, 21.5, 46.5] }, { f: 3956, P: [-37.9, 15.2, 50.6] }, { f: 3972, P: P72 }, { f: 3990, P: P90 }].map((k) => ({ T: [0, 0, 0], ...k }));
+const ARC1 = 3958, pArc = (f) => camRaw(P_ARC, f).P, pEnd = pArc(ARC1);
+const PHI0 = Math.atan2(J0.T[2] - J0.P[2], J0.T[0] - J0.P[0]) + 2 * Math.PI, PHI1 = Math.atan2(bz - pEnd[2], bx - pEnd[0]) + 2 * Math.PI;
+const D0 = Math.hypot(J0.T[0] - J0.P[0], J0.T[2] - J0.P[2]), D1 = Math.hypot(bx - pEnd[0], bz - pEnd[2]);
+const arcKey = (f) => { const u = smoother((f - F0) / (ARC1 - F0)), P = pArc(f), phi = lerp(PHI0, PHI1, u), d = lerp(D0, D1, u); return { f, P, T: [P[0] + d * Math.cos(phi), lerp(J0.T[1], 5, u), P[2] + d * Math.sin(phi)] }; };
 const hubT = (f, dy = 0) => [bx, burstAt(f).hub + dy, bz];
 export const CAM_KEYS = [
-  // f3840 to f3972: down and back into the corner, 0.1 cm a frame, looking at the place where the slot will be cut
-  { f: F0, P: [-33.5, 22.5, 45], T: [bx, 5, bz] },
-  { f: 3958, P: [-36.9, 12.3, 50.921], T: [bx, 5, bz] },             // z and T as cut 05 had them here, so f3972 to f3990 keeps its speed
+  J0,
+  ...Array.from({ length: 14 }, (_, i) => arcKey(F0 + 8 * (i + 1))), arcKey(ARC1),
   // f3968 to f4026: up with the stem and the shut ball
   { f: 3972, P: P72, T: [bx, 6, bz] },
   { f: 3990, P: P90, T: [bx, 15, bz] },
-  { f: C.last, P: [-36.9, 14.5, 55.4], T: [bx, 27, bz] },            // cut 05: x -37.7
-  { f: C.burst, P: [-37.2, 16, 56.4], T: [bx, 30, bz] },             // cut 05: x -37.8
+  { f: C.last, P: [-37.7, 14.5, 55.4], T: [bx, 27, bz] },
+  { f: C.burst, P: [-37.8, 16, 56.4], T: [bx, 30, bz] },
   // f4026 to f4082: holds on the open ball, drifting up and round it: the key image
   { f: C.human, P: [-36.6, 18, 56.9], T: [bx, 31, bz] },
   { f: E, P: [-33.6, 20, 57], T: [bx, 31.5, bz] },
@@ -171,30 +172,15 @@ export const CAM_KEYS = [
   { f: C.thinking, P: [-15, 4, 37], T: [-2, 2.9, 12.5] },
   J1,
 ];
-const SHOTS = shots([{ f: F0, keys: CAM_KEYS, float: (f) => joinFloat(F0, F1, f) }], true);       // true: the section's first frame is a cut
-export const CUTS = SHOTS.CUTS;
 // f4082 to f4129 only: the lens stays up on the ball while it comes apart and tilts down after the first flakes, instead
 // of going down with the stem. An offset on the target alone, zero (with its slope) at both ends: the path of the lens,
 // its speed and every frame outside (E, beginning) are as they were.
 export const LINGER = { dT: [0, 8, 0] };       // at its most (f4101) the target is 8 cm higher
 const lingerAt = (f) => { const u = clamp((f - E) / (C.beginning - E)); return 28.94 * u * u * (1 - u) ** 3; };       // 1 at u = 0.4; it lets go gently
-// f4268 to f4378 (this section's last frames and section 10's first): a sidestep away from the near plate tower. The join
-// at f4315 (joins.js, not this file's) stands 2.6 cm from the tower's bottom tier, and cut 05 passed the tier at 2.3 to
-// 3 cm from f4311 to f4344. Both sections add this same offset to the lens after the spline (section 10 imports it), so
-// this section still ends on joinKey(F1), section 10 still starts from it, and the move is unbroken across f4315. It
-// comes on over 46 frames and goes over 36, with no slope at either end, so the speed of the move changes by at most
-// 0.04 cm a frame. If the join is ever moved clear in joins.js, set d to zero.
-export const TOWER = { f0: 4268, on: 46, f1: 4342, off: 36, d: [-1.18, 0, -0.55] };       // 1.3 cm, straight out from the tower's middle
-export const towerClear = (f) => { const w = smooth((f - TOWER.f0) / TOWER.on) * (1 - smooth((f - TOWER.f1) / TOWER.off)); return TOWER.d.map((v) => v * w); };
-export const camAt = (f) => {
-  const c = SHOTS.camAt(f);
-  if (f > E && f < C.beginning) { const w = lingerAt(f); c.T = c.T.map((v, i) => v + w * LINGER.dT[i]); }
-  if (f > TOWER.f0) { const d = towerClear(f); c.P = c.P.map((v, i) => v + d[i]); }
-  return c;
-};
+export const camAt = (f) => { const c = camFrom(CAM_KEYS, f, joinFloat(F0, F1, f)); if (f > E && f < C.beginning) { const w = lingerAt(f); c.T = c.T.map((v, i) => v + w * LINGER.dT[i]); } return c; };
 
 export const BEATS = [
-  [F0, "(See)", "a cut from the dark room to the table, three-quarters on from over its near left corner; the lens comes slowly down into the corner"],
+  [F0, "(See)", "the camera turns back from the dark room to the table in one arc, over the left fence"],
   [C.sixties, "1960s", "the shut ball comes up through its slot on a card spine; three sections telescope up under it"],
   [C.last, "last", "the last section clicks out: the hub stands 40 cm over the cloth"],
   [C.burst, "burst", "fourteen leaves fan round the stem into a ball 34 cm across, with overshoot; its colour falls on the cloth and the towers"],

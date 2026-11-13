@@ -5,7 +5,7 @@
 // Units: centimetres, y up, the cloth is y = 0, x to the right, z toward the viewer.
 import { CUES } from "../cues/s04.js";                  // generated: $PY tools/onsets.py 04 (from tools/cues/s04.json)
 import { clamp, lerp, smooth, smoother, spring } from "../kit.js";
-import { shots, leg, walker, rev } from "./lib.js";
+import { camFrom, leg, walker, rev } from "./lib.js";
 import { joinKey, joinFloat } from "./joins.js";
 export { CUES };
 
@@ -29,7 +29,7 @@ export const FLAP = { x0: -3.547, x1: 3.91, y0: 3.582, y1: 9.455, seam: 0.235 };
 export const EYE = { at: [0.18, 6.5], w: 10 };                       // the eye's middle on the wall, its width
 export const THINGS = [{ name: "tv", x: -6.9, h: 6.0, cue: C.television }, { name: "newspapers", x: 2.5, w: 4.5, cue: C.newspapers }, { name: "magazines", x: 7.2, h: 4.2, cue: C.magazines }];
 
-// ---------- when things happen (frames). The room folds away after "robot", behind the card, while the lens holds on it.
+// ---------- when things happen (frames). The room folds away after "robot", while the camera is leaving.
 export const T = {
   cut: C.meeting - 16,                    // the floor's outline is cut in the cloth, 12 frames (section 3's coin has slid clear of it)
   floor: C.meeting,                       // the floor flips over about its back edge, 16 frames
@@ -82,30 +82,29 @@ export function citizenAt(f) {
 export const drawAt = (f) => 62 * smoother((f - T.draw) / 36);
 export const stripAt = (f) => smoother((f - T.strip) / 12);
 
-// ---------- the camera (camera pass, Nov 13 2026): two shots, each a hard cut in. Cut 05 was one move: it pulled
-// back from section 3's fallen citizen and swung round to the room's open front (f1188-f1236), worked along the back
-// wall, went up to the eye and down to the robot, then swung round the pepper and the salt to section 5's first key.
-// Both swings are gone: the section cuts in high over the room's place, cuts down to where the first swing settled as
-// the back wall springs up, and holds on the robot to its last frame.
-// Keys are in room coordinates (lx, height, lz) unless they say world.
+// ---------- the camera: one pull-back from the fallen citizen past the right end of the room's place to its open front
+// (the floor goes over and the walls come up in front of the lens), in on the room, close along the back wall from one
+// thing to the next, back for the three holes, up to the eye, down to the robot, then back and round the near side of
+// the pepper and the salt to section 5's first key. Keys are in room coordinates (lx, height, lz) unless they say world.
 const K = (f, p, t) => ({ f, P: loc3(...p), T: loc3(...t) });
 const eye = [EYE.at[0], EYE.at[1], -ROOM.D / 2];
-// cut 05's first key: section 3's own last key, close on the one that fell (kept as the head of CUT05)
+// f1196 is not the shared join: it is section 3's own last key (sections/s03.js J1196, the same numbers), close on the
+// one that fell. f1800 is the shared join.
 const J1196 = { f: F0, P: [-24.6, 3.4, -41.6], T: [-30.8, 0.9, -51.2], mP: [0.4, 0.1, 0.18], mT: [0.02, -0.02, 0.02] };
-// cut 05's one move, whole. The shot does not read it directly: it takes the keys it keeps from here (pin, keep).
-const CUT05 = [
+export const CAM_KEYS = [
   J1196,
-  // world: the pull-back from the fallen citizen to the room's open front (replaced by the cut)
+  // world: one pull-back from the fallen citizen, looking the same way throughout (the far left), past the right end of
+  // where the room will stand, to its open front. The strip is drawn off ahead of the lens, then the floor goes over
   { f: 1206, P: [-19.8, 5, -36.8], T: [-29.3, 0.6, -47.6] },
-  { f: 1216, P: [-13, 5.6, -27], T: [-28, 0.6, -38.7] },
-  { f: 1226, P: [-8.2, 6.2, -18.5], T: [-26.1, 1.5, -25] },
-  { f: 1238, P: [-4.8, 7, -13.6], T: [-26.5, 1.5, -17] },
+  { f: 1216, P: [-13, 5.6, -27], T: [-28, 0.6, -38.7] },              // the coin goes over the far edge; the floor's outline is cut below the lens
+  { f: 1226, P: [-8.2, 6.2, -18.5], T: [-26.1, 1.5, -25] },           // past the hinge line: the floor is going over
+  { f: 1238, P: [-4.8, 7, -13.6], T: [-26.5, 1.5, -17] },             // it has landed
   K(C.just, [20, 7.2, 11.5], [0, 3.5, -2]),                          // off the room's right front: the back wall comes up
   K(1266, [19.5, 7, 12.3], [0, 4.4, -2]),                            // the right side wall opens
   K(C.met, [18, 6.6, 13], [-1, 4.2, -1.5]),                          // the left side wall opens off the television
-  K(1298, [13.5, 6, 13.5], [-1, 4, -1]),                             // (replaced: 1 cm off the salt)
-  K(1314, [7, 5.5, 15.6], [-4, 3, 2.5]),                             // (replaced: between the salt and the pepper)
-  K(1330, [2.5, 5.1, 16.4], [-6.5, 2.6, 4.5]),                       // (replaced: 1.6 cm off the pepper)
+  K(1298, [13.5, 6, 13.5], [-1, 4, -1]),
+  K(1314, [7, 5.5, 15.6], [-4, 3, 2.5]),
+  K(1330, [2.5, 5.1, 16.4], [-6.5, 2.6, 4.5]),                       // "Swedish": on the head of his slot
   K(1352, [0, 4.8, 16], [-5, 2.8, 2.6]),                             // follows him in
   K(PHYS_STOP, [-1.5, 4.5, 14], [-2.2, 3, 0.6]),
   K(1412, [-3.2, 4.4, 12.8], [-4.5, 3.2, -2.5]),
@@ -119,8 +118,9 @@ const CUT05 = [
   K(C.nightmare, [0.9, 3.4, 15.7], [0.2, 5.7, -4.5]),                // the key image: the eye over the physicist
   K(C.everything, [0.2, 3.2, 14.9], [0.8, 5.2, -4]),                 // starts down
   K(1730, [-0.9, 3.2, 20.2], [3.6, 3, 4]),
-  K(C.robot, [-2.5, 3.2, 24.5], [5, 2.1, 9.5]),                      // down on the citizen as the card turns
-  // world: the swing round the near side of the pepper and the salt to section 5's first key (replaced by the hold)
+  K(C.robot, [-2.5, 3.2, 24.5], [5, 2.1, 9.5]),                      // down on the citizen as the card turns, the pepper pot just outside the frame's right edge
+  // world from here: the lens draws back from the robot and round the near side of the pepper and the salt, 13 to 17 cm
+  // off them (they cross the frame as two towers, right to left), then down the salt's right side to section 5's first key
   { f: 1771, P: [-16.5, 3.7, 12.6], T: [-17.3, 2.3, -7.5] },
   { f: 1778, P: [-12.5, 4.6, 16.6], T: [-14, 2.8, -7.6] },
   { f: 1784, P: [-7.2, 5.3, 11.6], T: [-3.9, 3.6, -13.1] },
@@ -128,54 +128,7 @@ const CUT05 = [
   { f: 1795, P: [-4.28, 6.02, 0.05], T: [8.2, 4.4, -21.6] },
   joinKey(F1),
 ];
-// a key of cut 05 with the spline's own tangent there written on it (the same limited Catmull-Rom rule as lib.js hermite).
-// A shot whose keys change on one side of a pinned key still runs exactly as cut 05 did on the other side of it.
-const pin = (f) => { const i = CUT05.findIndex((k) => k.f === f), ka = CUT05[i - 1], kb = CUT05[i], kc = CUT05[i + 1];
-  const tan = (ch) => kb["m" + ch] || [0, 1, 2].map((d) => { const d0 = (kb[ch][d] - ka[ch][d]) / (kb.f - ka.f), d1 = (kc[ch][d] - kb[ch][d]) / (kc.f - kb.f), m = (kc[ch][d] - ka[ch][d]) / (kc.f - ka.f);
-    return d0 * d1 <= 0 ? 0 : Math.sign(m) * Math.min(Math.abs(m), 3 * Math.abs(d0), 3 * Math.abs(d1)); });
-  return { ...kb, mP: tan("P"), mT: tan("T") }; };
-const keep = (fa, fb) => CUT05.filter((k) => k.f >= fa && k.f <= fb);       // cut 05's keys from fa to fb, as they are
-
-// SHOT 1, f1196 ("See, I keep meeting", the section's first frame): the room's place, whole, from high over its right
-// end, looking down its length at about 40 degrees. Section 3's coin is still lying on the place: it is in the frame
-// whole and slides away to the right in the first 16 frames. The lens comes in a little while the outline is cut
-// (f1205-f1217) in the middle of the frame, then trucks 7 cm along the room's front with the floor as it goes over
-// (f1221) and lands (f1237), so the floor is whole and central the whole way. 0.09 to 0.34 cm a frame.
-// A view low enough to ease into cut 05's f1252 key cannot hold the place whole (the footprint is 29 by 18 cm and the
-// frame is 37 degrees wide: the lens has to be 22 cm up or more; from there to the f1252 key is 15 cm down and 30
-// degrees of tilt in 56 frames), so this is a shot of its own and the lens cuts down on "just".
-// Its keys run on past the cut and hold the back wall and the right side wall whole: to cut down on "met" (f1281)
-// instead, change C.just to C.met in shots() below; nothing else needs to change.
-const PLACE_SHOT = [
-  K(1170, [31, 31.8, -3.6], [1.6, 0, -10.1]),                        // before the shot: only gives the spline its heading
-  K(F0, [29, 28, -5.5], [1, 0, -9.5]),                               // the coin is whole in the frame, on the place
-  K(1214, [27.2, 24.8, -6.8], [0.5, 0, -9]),                         // the outline is being cut where the floor lies face down
-  K(1246, [25.2, 22.3, 0], [1.5, 0.5, -1.2]),                        // the floor has gone over and landed: the lens has trucked along with it
-  K(1281, [23.2, 20.5, 2.8], [1.2, 1.3, -1.2]),                        // (past the cut at f1252: the back wall and the right side wall, whole)
-  K(1310, [21.8, 19.2, 4.6], [1, 2, -1.3]),
-];
-
-// SHOT 2, f1252 ("just", the frame the back wall starts to spring up): off the room's right front, cut 05's own f1252
-// key, and from there IS cut 05 (the walls come up, round to the open front as he hinges up, in with him, the wall, the
-// eye, the robot), except:
-// - f1281-f1390, round to the open front and in with him: the same move on a line 2 to 4 cm nearer the room, clear of
-//   the salt and the pepper (4.2 and 3.9 cm off them; cut 05: 1.0 and 1.6), and no faster (0.42 cm a frame; cut 05: 0.50).
-// - f1730-f1799, the robot: the lens settles on the card as it turns and stays on it, pushing in along its own line
-//   of sight, away from the basket (cut 05 left at once and passed 2.2 cm from it). The card slides off from f1786 and
-//   the room folds behind it; section 5 cuts in at f1800.
-export const CAM_KEYS = [
-  pin(C.just), ...keep(1266, 1266), pin(C.met),
-  K(1298, [13.1, 6, 11.5], [-1, 4, -1]),
-  K(1314, [7.3, 5.5, 12], [-2.6, 3, 1.4]),
-  K(1330, [2.6, 5.1, 14.6], [-6.35, 2.6, 4.5]),      // "Swedish": the head of his slot is in the left of the frame
-  { ...K(1352, [0.2, 4.8, 15.9], [-6.3, 2.8, 3]), mP: [-0.15 * ux, -0.012, -0.15 * uz] },     // follows him in (its own tangent: 0.15 cm a frame along the room's front, so the lens does not stall where it turns back toward the room)
-  pin(PHYS_STOP), ...keep(1412, C.robot),
-  K(1782, [-1.8, 3.2, 23.1], [5.3, 2.1, 9.5]),                       // the robot stands; the lens pushes in along its own line of sight (the pepper stays outside the frame's right edge)
-  K(F1, [-1.1, 3.25, 21.7], [5.9, 2.1, 9.55]),                       // it has started back along its slot; section 5 cuts in here
-  K(F1 + 24, [-0.2, 3.3, 19.9], [6.9, 2.1, 9.6]),                    // past the shot: only gives the spline its heading
-];
-const float = (f) => joinFloat(F0, F1, f);
-export const { camAt, CUTS } = shots([{ f: F0, keys: PLACE_SHOT, float }, { f: C.just, keys: CAM_KEYS, float }], true);
+export const camAt = (f) => camFrom(CAM_KEYS, f, joinFloat(F0, F1, f));
 
 // ---------- hooks. Cooler through the section, coolest while the eye is open; the candle dips a little under the eye.
 // Each is exactly "no change" before f1196 and from f1798 on.
@@ -186,7 +139,7 @@ export const fill = (f) => (inside(f) ? 1 - 0.1 * cool(f) : 1);
 export const grade = (f) => { if (!inside(f)) return null; const k = cool(f), e = eyeOn(f); return k > 0 || e > 0 ? { expo: 1, tint: [1 - 0.045 * k - 0.04 * e, 1 - 0.01 * k, 1 + 0.035 * k + 0.03 * e], sat: 1 - 0.07 * k } : null; };
 
 export const BEATS = [
-  [F0, "start", "cut: the room's place from high over its right end; section 3's coin lies on it and slides away"], [T.cut, "(before meeting)", "the outline of the room's floor is cut in the cloth, left of centre (12 frames)"],
+  [F0, "start", "the camera draws back from the fallen citizen, looking the same way, as section 3's strip is drawn off"], [T.cut, "(before meeting)", "the outline of the room's floor is cut in the cloth, left of centre (12 frames)"],
   [C.meeting, "meeting", "the floor flips over about its back edge and lies in place (16 frames)"], [C.just, "just", "the back wall springs up, the side walls folded on its face; 9 frames on the right side wall swings open: the newspapers and the magazines"],
   [C.met, "met", "the left side wall swings open off the television"],
   [C.swedish, "Swedish", "the physicist hinges up at the head of his slot, outside the open front"], [C.physicist, "physicist", "he slides in along his slot"],
@@ -196,5 +149,5 @@ export const BEATS = [
   [C.orwellian, "Orwellian", "the flap's two doors spring open: one large paper eye, lit from behind"], [C.nightmare, "nightmare", "the iris slides to him"],
   [C.everything, "everything", "the iris slides to the lens; a citizen has come along a slot to just outside the room"], [C.robot, "robot", "the citizen card turns, edge-on for two frames: its back is the robot"],
   [T.shut, "(after)", "the cut-outs fold back, the flap shuts, the physicist hinges down, the walls fold flat"], [T.draw, "(after)", "the folded room is drawn off the left edge on its strip; the robot slides away and hinges down"],
-  [F1 - 1, "end", "the lens is still on the robot as it slides back along its slot; section 5 cuts in on the next frame"],
+  [F1 - 1, "end", "section 5's first key"],
 ];
