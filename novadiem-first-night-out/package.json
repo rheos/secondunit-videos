@@ -1,0 +1,7 @@
+{
+  "name": "novadiem-first-night-out",
+  "private": true,
+  "type": "module",
+  "description": "First Night Out: a wordless cut-paper raccoon film in the manner of Leon Lin's paper-fox. Paper engine ported from paper-fox (MIT); the raccoons, their rig and the scenes are ours.",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
