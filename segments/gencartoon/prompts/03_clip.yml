@@ -1,0 +1,19 @@
+# The paid step, NOT run for this segment (no paid generation without Robin's go).
+# One 10 s MiniMax H3 Max lip-sync clip in reference mode: the character still (assets/character-green.png,
+# made from 01_character.txt) plus a vocal as audio. 15 s of segment needs two clips or one clip held and
+# looped. Cost on the look's record: 34 credits per 10 s. The vocal must be ours (no client stems).
+- name: sing_drive
+  image: assets/character-green.png
+  seconds: 10
+  audio: <our own vocal, not a client stem>
+  key: green
+  frames: 240
+  prompt: >-
+    The cartoon ice-cream van from the reference image sings the supplied vocal audio, lip-synced to every
+    syllable with the wide mouth in its grille. Bright and pleased with itself, eyes rolling up on the long
+    notes. The van bobs gently on its tyres as if rolling down a road, but stays in place in the frame. Side
+    three-quarter view facing screen-right, the whole van inside the frame with a margin, including the roof
+    sign and all tyres. Locked camera, no camera movement, no zoom, no cuts. Perfectly flat chroma green
+    #00B140 background throughout, no shadows on the background, no floor, no road, no text, no other
+    characters, no green on the character. Keep its face, colours, shape and the hand-made 1960s collage
+    cartoon style identical to the reference.

@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="icon" href="data:,"><title>Field-guide illustration: 15 s segment</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>html,body{margin:0;height:100%;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden}canvas{width:min(100vw,177.78vh);height:auto;display:block;cursor:pointer}</style>
+</head><body><canvas id="c"></canvas>
+<!-- config and clock, then the engine -->
+<script src="film.config.js"></script>
+<script src="engine/clock.js"></script>
+<script src="clock.js"></script>
+<script src="engine/core.js"></script>
+<script src="engine/kit.js"></script>
+<script src="engine/look.js"></script>
+<!-- the two looks: fieldguide draws the paper scenes ('ill'), blueprint the schematic plates ('sch') -->
+<script src="looks/fieldguide.js"></script>
+<script src="looks/blueprint.js"></script>
+<!-- the scene: cast, set-ups and buildShots() -->
+<script src="js/scene.js"></script>
+<!-- last: build the shots, start the looks, draw -->
+<script src="engine/frame.js"></script>
+<script src="js/hooks.js"></script>
+</body></html>

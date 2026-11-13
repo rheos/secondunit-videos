@@ -1,0 +1,13 @@
+{
+  "name": "quiver-segment-fieldguide",
+  "private": true,
+  "type": "module",
+  "description": "Quiver look segment: field-guide illustration cut against blueprint plates, 15 seconds drawn in code.",
+  "scripts": {
+    "render": "node render.mjs",
+    "preview": "node preview.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.0"
+  }
+}
