@@ -38,6 +38,13 @@ done
 inputs=(); for f in {0..4760..48}; do inputs+=(-i $FR/f$(printf '%04d' $f).jpg); done
 nice -n 15 ffmpeg -y -loglevel error ${inputs[@]} -filter_complex "concat=n=${#inputs}/2:v=1:a=0,scale=180:-2,tile=20x5" -frames:v 1 $CK/film_every-2s.jpg
 FRAMES=0-4760 SPEED=12 nice -n 15 node tools/render.mjs > $CK/camera-speed.txt; tail -2 $CK/camera-speed.txt
+# the declared cuts: three frames either side of each, one strip per cut (the last frame of one shot, the first of the next)
+for j in $(grep -E '^f[0-9]+ \([0-9]+:[0-9]+\)  lens moves' $CK/camera-speed.txt | sed -E 's/^f([0-9]+) .*/\1/'); do
+  inputs=(); for f in $((j - 3)) $((j - 2)) $((j - 1)) $j $((j + 1)) $((j + 2)); do inputs+=(-i $FR/f$(printf '%04d' $f).jpg); done
+  nice -n 15 ffmpeg -y -loglevel error ${inputs[@]} -filter_complex "concat=n=6:v=1:a=0,scale=360:-2,tile=6x1" -frames:v 1 $CK/cut_f$j.jpg
+done
+# the lens and the pieces: every frame where the lens is within 3 cm of one (there should be none)
+FRAMES=0-4760 NEAR=3 nice -n 15 node tools/render.mjs > $CK/camera-near.txt; echo "lens within 3 cm of a piece on $(grep -c '^f' $CK/camera-near.txt || true) frames (see camera-near.txt)"
 nice -n 15 $PY ../../../tools/cloud-render/badframes.py $REVIEW | tail -4 || true
 nice -n 15 $PY ../../../tools/motion-lab/flashcheck.py $REVIEW | tail -4 || true
 echo "DONE $REVIEW"
