@@ -77,7 +77,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-        run: gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$ASSET" > scene.blend
+        run: |
+          gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$ASSET" > scene.blend
       - name: Render and encode
         run: |
           a=$(( F0 + N * FRAMES / SLICES )); b=$(( F0 + (N + 1) * FRAMES / SLICES ))
