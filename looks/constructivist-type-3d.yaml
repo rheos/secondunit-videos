@@ -62,10 +62,12 @@ proof:
   pr:
     - rheos/secondunit-videos#503
     - rheos/secondunit-videos#506
+    - rheos/secondunit-videos#512
   renders:
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-b_f0-f468_24fps_review.mp4
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-v2-cobalt-d_f0-f468_24fps_review.mp4
     - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-blender-e_f0-f468_24fps_review.mp4
+    - bobwiseman-new-city-constructivist/out/review/new-city_constructivist-blender-full-a_f0-f845_24fps_review.mp4
 verdict: >-
   Robin, 2026-11-12, on the 19.5 s cobalt cut (v2-cobalt-b): it lands, keep it. Next: the same test in Blender for
   comparison. On v1 (flat silhouettes, words facing the camera) he said it missed the essence: the 3D build, the
@@ -73,6 +75,12 @@ verdict: >-
   (three.js v2-cobalt-d, Blender constructivist-blender-e): Robin picked Blender as closer to What Barry Says. Along the
   way he moved the paper under the print ("more present on the backdrop... the elements are holographically coming
   away from the backdrop") and asked for a projected feel, "not so opaque but not transparent either".
+  Full song in Blender (#511), the same night: built end to end (block stacks for the choruses, a crowd raising its
+  hands, rounded animals for the animals verse, bare masts and two crowds for the flags verse) and stopped before the
+  render finished. Robin, 2026-11-12: "i'm actually not that happy with how this is turning out.. the animals look
+  terrible.. it's probably not the right thing for this song.. let's wrap it up." On the head of the render (0:00-0:35):
+  "i think this style is a flop for this.. it has a long way to go to be as good at the reference". The look stands as
+  a test; New City needs a different direction.
 related:
   - toon-cards
   - perspective-illusion
