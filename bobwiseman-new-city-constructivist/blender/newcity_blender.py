@@ -639,7 +639,9 @@ def paper_image(W=1280, H=720):
     assert abs(float(got[1::4].max()) - float(lift.max())) < 1e-3, "paper image was colour-converted"
     return img
 
-OBJ_PAPER = float(opt("--objpaper", 0.2))   # share of the paper tooth that shows on rendered objects (1 = v2 finish)
+PROJ_ON = not opt("--noproj")
+VEIL, LIFT, HALO = float(opt("--veil", .035)), float(opt("--lift", .02)), float(opt("--halo", .25))
+OBJ_PAPER = float(opt("--objpaper", 0.3))   # share of the paper tooth that shows on rendered objects (1 = v2 finish)
 def setup_compositor():
     SC.use_nodes = True; nt = SC.node_tree
     if nt.animation_data: nt.animation_data_clear()
@@ -675,6 +677,20 @@ def setup_compositor():
     x = math_("DIVIDE", bw.outputs[0], .25, True)
     w = math_("SUBTRACT", 1.0, math_("MULTIPLY", math_("MULTIPLY", x, x), math_("ADD", math_("MULTIPLY", x, -2.0), 3.0)))
     c2 = mixrgb("ADD", c1, math_("MULTIPLY", math_("MULTIPLY", sp.outputs[1], w), k))   # tooth through dark ground
+    # Projection (Robin, 2026-11-12: "more like a holographic projection... not so opaque but not transparent either").
+    # The reference's black ink sits at about 45-55/255 and bright paper bleeds a pale halo over dark edges, as a
+    # projected film print does: a veil of the blurred frame plus a small flare lift raise the inks toward the colour
+    # around them, and a fog glow from the bright paper spills over the objects' edges.
+    if PROJ_ON:
+        vb = N.new("CompositorNodeBlur"); vb.filter_type = "FAST_GAUSS"; vb.use_relative = True
+        vb.factor_x = vb.factor_y = 0.12; vb.aspect_correction = "Y"; L.new(c2, vb.inputs["Image"])
+        veil = math_("ADD", math_("MULTIPLY", vb.outputs[0], VEIL), LIFT)
+        c2 = mixrgb("ADD", c2, veil)
+        gl = N.new("CompositorNodeGlare"); gl.glare_type = "FOG_GLOW"; gl.quality = "HIGH"; L.new(c2, gl.inputs["Image"])
+        gl.inputs["Threshold"].default_value = .25; gl.inputs["Smoothness"].default_value = .5
+        gl.inputs["Strength"].default_value = HALO; gl.inputs["Size"].default_value = .55
+        go = gl.outputs["Glare"] if "Glare" in gl.outputs else gl.outputs[0]
+        c2 = mixrgb("ADD", c2, go) if "Glare" in gl.outputs else go
     c3 = mixrgb("MULTIPLY", c2, sp.outputs[2])                                  # vignette
     comp = N.new("CompositorNodeComposite"); L.new(c3, comp.inputs[0])
     return tr, bg
