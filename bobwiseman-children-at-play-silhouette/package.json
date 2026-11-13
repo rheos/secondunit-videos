@@ -1,0 +1,7 @@
+{
+  "name": "bobwiseman-children-at-play-silhouette",
+  "private": true,
+  "type": "module",
+  "description": "Look test: Bob Wiseman, Children at Play, verse 1, in coloured paper silhouettes (the papersilhouette look, kit from In Her Dream).",
+  "devDependencies": { "playwright": "^1.55.0" }
+}
