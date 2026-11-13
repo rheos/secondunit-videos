@@ -23,7 +23,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROJ = os.path.dirname(HERE)
 OUT = os.path.join(PROJ, "out", "blender")
 FPS = 24
-F_LAST = 467                      # song frames 0..467 = 0:00.0-0:19.5, as the three.js cut
+FULL = "--full" in sys.argv          # the whole song (blender/song.py); without it, the 19.5 s look test
+F_LAST = 5637 if FULL else 467        # song frames: 0..5637 = the whole 3:54.9 song; 0..467 = 0:00.0-0:19.5
 argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 def opt(name, default=None):
     if name in argv:
@@ -55,6 +56,8 @@ cut = lambda i: LINES[i][0]["s"] - 0.45
 # and its finish pass encodes once, so the approved cut shows lin(hex) as display values. To match what Robin
 # approved, the scene-linear ink here is lin(lin(hex)); the Standard view transform encodes it to lin(hex).
 ARC = [(0.0, ["#e6e5dc", "#2c5aa0", "#21252f"]), (9.0, ["#ece4cf", "#2f5c9e", "#24242c"]), (16.0, ["#f2e2ba", "#34529f", "#2a2424"])]
+if FULL:   # the same arc, cool morning to warm, spread over the whole song
+    ARC = [(0.0, ARC[0][1]), (110.0, ARC[1][1]), (215.0, ARC[2][1])]
 MOTIF = "#e9c43a"
 hexrgb = lambda h: [int(h[i:i + 2], 16) / 255 for i in (1, 3, 5)]
 s2l = lambda c: c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
@@ -84,8 +87,11 @@ ROOT = bpy.data.objects.new("NC_ROOT", None); SC.collection.objects.link(ROOT)
 ROOT.rotation_euler = (math.pi / 2, 0, 0)          # three (x, y, z) -> Blender (x, -z, y)
 LIB = bpy.data.collections.new("NC_LIB"); SC.collection.children.link(LIB); LIB.hide_render = True
 
+REG = [None]            # while a shot is being built, every object it makes is registered to it
+SHOT_META = []
 def obj(name, data=None, parent=ROOT, coll=None):
     ob = bpy.data.objects.new(name, data); (coll or SC.collection).objects.link(ob)
+    if REG[0] is not None: REG[0].append(ob)
     ob.parent = parent; ob.rotation_mode = "ZYX"     # = three.js Euler order XYZ
     return ob
 
@@ -361,7 +367,8 @@ def camera(pos, at, roll, fov, focus, aperture):
 # ---------------------------------------------------------------------------------------------------------------
 # the four shots (story2.js). Each appends (start time, ground ink, update(t, active)).
 SHOTS = []
-def vis(ob, on): rec(ob, "hide_render", 0.0 if on else 1.0); rec(ob, "hide_viewport", 0.0 if on else 1.0)
+def vis(ob, on):   # hide_render only: an object disabled in the viewport isn't evaluated, so its keys would never apply
+    rec(ob, "hide_render", 0.0 if on else 1.0)
 def pop_scale(ob, t, s, base):
     p = 1 + 0.12 * (1 - ease((t - s) / 0.12)); rec(ob, "scale", tuple(b * p for b in base))
 def stamp(ob, t, s, active):
@@ -723,9 +730,10 @@ def build():
     # quarter frames, so constant keys (visibility, ground) switch inside the shutter as three.js's sub-frames did,
     # plus both sides of every exact switch: the cuts and each word's stamp (s - 1/24; shot A uses s - 2/24)
     times = [q / (4 * FPS) for q in range(-8, 4 * F_LAST + 12)]
-    for st, _, _ in SHOTS[1:]: times += [st - 1e-4, st]
+    E = .015 / FPS     # Blender merges keys closer than .01 frame
+    for st, _, _ in SHOTS[1:]: times += [st - 2 * E, st]
     for line in LINES:
-        for w in line: times += [w["s"] - d + e for d in (1 / 24, 2 / 24) for e in (-1e-4, 1e-4)]
+        for w in line: times += [w["s"] - d + e for d in (1 / 24, 2 / 24) for e in (-E, E)]
     times.sort()
     for t in times:
         FRAME[0] = t * FPS
@@ -741,6 +749,48 @@ def build():
         rec(tr.inputs["X"], "default_value", -wx * pct); rec(tr.inputs["Y"], "default_value", -wy * pct)
     write_keys()
     print(f"[newcity] built in {time.time() - t0:.1f} s, {len(KEYS)} animated channels")
+
+def build_full():
+    """the whole song: verse 1 is story2.js's four shots, the rest is blender/song.py. Only the shot on screen is
+    sampled; every shot's objects are hidden outside its window by constant keys at its cuts."""
+    t0 = time.time()
+    setup_render()
+    for f in (shot_a, shot_b, shot_c, shot_d):
+        REG[0] = []; f(); st, g, upd = SHOTS[-1]
+        SHOTS[-1] = (st, g, (lambda u: lambda t: u(t, True))(upd)); SHOT_META.append({"objs": list(REG[0]), "managed": set()}); REG[0] = None
+    sys.path.insert(0, HERE)
+    exec(compile(open(os.path.join(HERE, "song.py")).read(), "song.py", "exec"), globals())
+    build_song_shots()
+    starts = [sh[0] for sh in SHOTS]; assert starts == sorted(starts), "shots out of order"
+    tr, bg = setup_compositor()
+    pct = SC.render.resolution_percentage / 100
+    hsh = lambda n: (lambda x: x - math.floor(x))(math.sin(n * 12.9898) * 43758.5453)
+    ends = starts[1:] + [F_LAST / FPS + 1]
+    for i, meta in enumerate(SHOT_META):
+        a, b = starts[i] * FPS, ends[i] * FPS
+        for o in meta["objs"]:
+            FRAME[0] = a - .03; vis(o, False); FRAME[0] = b; vis(o, False)   # keys under .01 frame apart get merged
+            if o not in meta["managed"]: FRAME[0] = a; vis(o, True)
+    times = [q / (4 * FPS) for q in range(-8, 4 * F_LAST + 12)]
+    E = .015 / FPS     # Blender merges keys closer than .01 frame, so both sides of a switch sit .03 frame apart
+    for st in starts[1:]: times += [st - 2 * E, st]
+    for s in [w["s"] for line in LINES for w in line] + WORD_TIMES:
+        times += [s - d + e for d in (1 / 24, 2 / 24, .45) for e in (-E, E)]
+    times = sorted(t for t in times if t >= -2 / FPS)
+    cur = 0
+    for t in times:
+        FRAME[0] = t * FPS
+        while cur + 1 < len(SHOTS) and t >= SHOTS[cur + 1][0]: cur += 1
+        SHOTS[cur][2](t)
+        ik = inks(t)
+        for k, n in INK_NODE.items(): rec(n.outputs[0], "default_value", ik[k] + (1,))
+        rec(bg.outputs[0], "default_value", ik[SHOTS[cur][1]] + (1,))
+    for f in range(-2, F_LAST + 3):
+        FRAME[0] = f
+        wx = (hsh(f) - .5) * 1.4 + math.sin(f * .37) * .5; wy = (hsh(f + 91) - .5) * 1.0 + math.sin(f * .23) * .4
+        rec(tr.inputs["X"], "default_value", -wx * pct); rec(tr.inputs["Y"], "default_value", -wy * pct)
+    write_keys()
+    print(f"[newcity] full song built in {time.time() - t0:.1f} s, {len(SHOTS)} shots, {len(KEYS)} animated channels")
 
 def calib():
     """Shader to RGB of a white Diffuse on a face square to the sun, to set CAL."""
@@ -794,7 +844,7 @@ if opt("--calib"):
     calib(); sys.exit(0)
 if opt("--lineup"):
     lineup(); sys.exit(0)
-build()
+build_full() if FULL else build()
 if opt("--save"):
     p = opt("--save"); p = p if os.path.isabs(p) else os.path.join(PROJ, p)
     os.makedirs(os.path.dirname(p), exist_ok=True); bpy.ops.wm.save_as_mainfile(filepath=p, compress=True)
