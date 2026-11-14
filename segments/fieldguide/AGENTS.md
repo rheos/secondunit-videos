@@ -22,6 +22,23 @@ gardener and a sunflower. `segment.json` is the machine-readable version of this
 | `looks/blueprint.js` | the `sch` plates: navy `#0c1430` ground, lavender `#c9c6ff` and cyan `#8fe3ff` crisp lines that never boil, magenta `#ff3d9a` only for what changes; provides `schBG()`, `schFrame()` |
 | `engine/` | cleanline: drawings held on twos with fresh grain every frame, the seeded random stream `R`, the drawing kit, the look registry, the frame driver |
 
+## The drawing kit, at a glance (`engine/kit.js`)
+
+Coordinates are pixels on the 1920x1080 canvas; colours are `C.<name>` (`paper`, `paper2`, `ink`, `ochre`, `tan`,
+`orange`, `rose`, `sage`, `teal`, `dark`, `wax`, `cream`, `brick`, `sky`, `plum`; on plates `navy`, `lav`, `cyan`,
+`mag`, `white`) or a hex string.
+
+| Call | Draws |
+|---|---|
+| `PE(cx, cy, rx, ry, rot)`, `PP([[x, y], ...])`, `PR(x, y, w, h)` | shapes (Path2D) to fill, hatch or clip |
+| `fillP(shape, col)` | an opaque fill; the look washes it and remembers it, so the next ink line on it takes its darker cut |
+| `hatch(shape, cx, cy, rad, angle, spacing, col, w, a, [dx, dy])`, `shade(shape, cx, cy, rad, [dx, dy])` | hatching clipped to a shape; `[dx, dy]` keeps it to the shadow crescent; `shade` adds the cross-hatch |
+| `iline(x1, y1, x2, y2, C.ink, w)`, `iE(cx, cy, rx, ry, rot, C.ink, w)`, `iP(points, closed, C.ink, w)`, `iBox(x, y, w, h)` | ink lines; `dens(points, step, closed)` first so long sides wobble by hand |
+| `stip(shape, cx, cy, rad, n, col)` | stipple |
+| `stripes(c1, c2, width, angle, offset, hatchCol)`, `paper(c)` | the grounds (fieldguide) |
+| `schBG()`, `schFrame(n, title, sub)`, `gl`, `gc`, `ticks`, `lab`, `bracket`, `lattice`, `hexGrid`, `star` | the blueprint plate and its crisp marks |
+| `bz(a, b, c, d, t)`, `bzPts(...)`, `seg(p, a, b)`, `eo`, `eio` | curves, a 0 to 1 sub-range of a shot, easing |
+
 ## Make your own piece with it
 
 - Edit `js/scene.js`. `buildShots()` returns cuts in time order: `{ t0, t1, mode: 'ill' | 'sch', key, draw(p, lt) }`.

@@ -22,6 +22,28 @@ machine-readable version of this page.
 | `js/vocab.js` | the 46-colour palette (`PALDEF`, every pixel is one of these), traffic and palm sprites, scenery layers, the pseudo-3D road, the UI box and the race HUD |
 | `js/look.js`, `js/gl.js` | the finish reads the buffer 1:1 (`texelFetch`, no blur): the last output row of each game pixel x0.87, vignette 0.3·r², a white flash for hits |
 
+## The drawing kit, at a glance
+
+All coordinates are game pixels on the 320x180 screen; `c` is a palette index such as `C.RED`.
+
+| Call | Draws |
+|---|---|
+| `pset(x, y, c)`, `hline(x0, x1, y, c)`, `line(x0, y0, x1, y1, c, th)` | a pixel, a row, a Bresenham line |
+| `rect(x, y, w, h, c)`, `rectO(...)`, `frame(x, y, w, h, c)` | a filled box, the same with a 1 px `C.INK` outline drawn outside it, a hollow box |
+| `circ(cx, cy, r, c)`, `ell(cx, cy, rx, ry, c)`, `poly([[x, y], ...], c)`, and the `...O` forms | filled shapes from the centre or a point list; `O` adds the outline outside |
+| `hlineD`, `rectD(x, y, w, h, c1, c2, k)`, `ell(..., c, c2, k)`, `vgradD(y0, y1, [c, ...])` | Bayer-dithered fills: `c2` covers fraction `k`; `TR` as a colour leaves pixels untouched |
+| `sprite(rows, map, mirror)`, `blit(sp, x, y, { sc, flip, ax, ay })`, `offscreen(w, h, fn)` | text-row sprites, nearest-neighbour blits, drawing into a reusable buffer |
+| `txt(str, x, y, c, { o, sh, sc, align })`, `txtW(str, sc)`, `typed(words, times, t)` | the 5x7 font (capitals, digits, common punctuation, no lowercase); measure with `txtW` before boxing it |
+| `box(x, y, w, h)`, `aButton(x, y, pressed)`, `hudRace(t, o)` | a menu or dialogue box, an A button, the race HUD |
+| `remapFB(palMap(fn))` | recolour the whole frame through the palette (the pause screen dims this way) |
+
+`race()`, `road()`, `playerVan()` and `hudRace()` build the behind-view road scene. A subject off the road needs its
+own ground and sprites, drawn with the calls above.
+
+Colour names (`C.<NAME>`, all 46): K INK NAVY DBLUE BLUE SKY CYAN WHITE PALE LGREY GREY SLATE ROADA ROADB MTN MTND
+RED DRED ORANGE AMBER YELLOW CREAM CREAMD LGREEN GREEN GRASSA GRASSB DGREEN DDGREEN SKIN SKIND BROWN DBROWN TAN SAND
+PINK PEACH PURPLE MAGENTA DEEP MBLUE TEAL BLUSH HAZE DPURP LAV. Hex values are in `PALDEF` in `js/vocab.js`.
+
 ## Make your own piece with it
 
 - Edit `js/scene.js`. Each shot is a function of song time `t` that draws into the buffer; register it with
