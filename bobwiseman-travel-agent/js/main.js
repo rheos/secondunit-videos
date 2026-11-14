@@ -5,6 +5,8 @@
 const SHOTS = buildShots();
 const out = document.getElementById('c'); out.width = W; out.height = H; const O = out.getContext('2d');
 const buf = document.createElement('canvas'); buf.width = W; buf.height = H; X = buf.getContext('2d');
+if (typeof ink2Init === 'function') ink2Init(X); // js/ink2.js: the upgraded line and wash (?ink=1 = draft 15 look)
+if (typeof armInit === 'function') armInit(X); // js/arm.js: the robot-arm look test (?look=arm)
 const GP = [0, 1, 2, 3].map((i) => grainCanvas(11 + i, false)), GD = [0, 1, 2, 3].map((i) => grainCanvas(91 + i, true));
 let lastFD = -1, lastShot = null;
 
@@ -16,8 +18,10 @@ function renderFrame(t) {
     lastFD = fd; lastShot = sh; FD = fd; DSEED = Math.round(sh.t0 * 97) + 1; R = M32((fd * 9301 + DSEED) >>> 0);
     X.setTransform(1, 0, 0, 1, 0, 0); X.globalAlpha = 1; X.globalCompositeOperation = 'source-over'; X.setLineDash([]);
     const lt = Math.max(0, td - sh.t0), p = cl(lt / (sh.t1 - sh.t0));
+    if (typeof armPre === 'function') armPre();
     X.save(); try { sh.draw(p, lt, sh); } catch (e) { console.error(e && e.stack || e); } X.restore();
     X.setTransform(1, 0, 0, 1, 0, 0);
+    if (typeof armPost === 'function') armPost(X, sh.mode);
   }
   O.globalAlpha = 1; O.drawImage(buf, 0, 0);
   const G = sh.mode === 'ill' ? GP : GD; O.drawImage(G[f & 3], ((f * 3) % 5) - 6, ((f * 7) % 5) - 6, W + 12, H + 12);

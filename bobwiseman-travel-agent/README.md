@@ -7,26 +7,59 @@ Code-drawn music video, 0 credits. Started 2026-10-12 at Robin's request.
 - Timing: Whisper medium (`source/words-whisper-medium.json`) and librosa beats (`source/beats.json`), exported without lyric text to `js/data.js`. Bob's lyric sheet is still needed: no lyrics are printed on screen until it arrives, only diagram labels.
 - Audio, lyrics and `STORYBOARD.md` (it quotes them) stay out of git.
 
+## Status (2026-10-13)
+
+Draft 8h continues the work in draft PR rheos/secondunit-videos#113 (issues #112 and #120).
+The 73.7–90.8 s passage now follows the corrected lyric: the car is turned away at a village and on the moon,
+then the traveller leaves it and continues on foot to a payphone. In the last minute, the navy ruptures grow
+and merge beyond the earlier one-third ceiling, preserving focal subjects and the protected phone recursion.
+The snow restores the paper before the unchanged closed-shop ending.
+
+Draft 8e extends the nested-screen zoom from 373.48 to 382.46 s (8.98 s instead of 4.22 s),
+traversing 3.5 screen levels instead of 1.5. It starts 1.6 s earlier, continues through the former
+standing-stones shot, and cuts to the typing-dots blueprint at its original cue.
+
+Draft 8g replaces the rejected pull-back with a continuous move into the final screen. The typing
+blueprint is drawn inside the last monitor, and that monitor grows to fill the viewport at the “I've”
+cue. The descent never reverses; the incoming scene continues from the same composition. The final
+1.4 seconds ease into this fourth level. The original audio and subsequent cuts keep their timing.
+
+Draft 8h corrects the reverse view inside the phone (371.88–373.48 s): the bars and glass-touch
+ripples sit behind the agent, desk and lamp, with the bars ending at the far floor line. The subsequent
+nested-screen transition is unchanged.
+
+Draft 8g remains the comparison baseline for the layering correction. Review exports and verification evidence stay local under `out/`;
+no final master or new upload is implied. The current handoff and detailed direction are in `NEXT-SESSION.md`
+and `MVU-DIRECTION.md` (local, gitignored).
+
 ## Look
 
-An educational field-guide short in two modes, cut hard every 1.2 to 2.5 s on the beat:
+An educational field-guide short in two modes, cut hard on the beat: **illustrated** (Kevin Ngo manner: cream paper with
+grain, irregular doubled ink, hatching only, muted warm palette, wide diagonal stripe grounds, construction lines, thin
+coloured motion arcs) and **schematic** (navy blueprint, pale linework, hex lattices, stipple, glowing nuclei, brackets,
+magenta for change). Drawn on twos; every mark is canvas code.
 
-- **Illustrated**: cream paper with grain, irregular doubled ink, shading by directional hatching only, flat muted warm palette, wide diagonal stripe grounds, construction lines running past the forms, thin coloured motion-graphic arcs.
-- **Schematic**: navy blueprint, pale lavender/cyan linework, hex lattices, stipple fills, glowing nuclei with radial ticks, brackets and ticks everywhere, magenta saved for change.
+Mark Von Ulrich, an illustrator Robin loves (he died about ten years ago), is guest art director from draft 6: his
+thinking shapes the drawn shots (device-as-body, frontal emblem framing, nesting, scale as meaning), and his world
+lives only inside device screens as early-Mac illustration (72-dpi stepped edges, the 216-colour cube with ordered
+dither, 1-px outlines, indigo gradient grounds). Schematics are never pixelated; none of his pieces is reproduced.
 
-Drawn on twos (each drawing held 2 frames, lines boil between drawings), grain changes every frame. Every mark is canvas code: no images, fonts or libraries.
-
-Concept: the life of a getaway. A deadpan traveller (fedora, teal coat, suitcase, a blues cloud that follows him; a generic figure, not Bob's likeness) asks a travel agent for the farthest place from his blues. Every route in the diagrams loops back to her desk, and the film ends where it began, at the shopfront, now in snow.
+Concept: the life of a getaway. A generic traveller (never Bob's likeness) with a rain cloud asks a travel agent for the
+farthest place from his blues. The world gets more surreal act by act; the agent becomes a payphone, a hold queue, an
+app, then a woman inside his phone; the blueprint burns through the paper in the last third; the snow heals it and the
+film ends at the closed agency, FOR LEASE, with little Bob passing.
 
 ## Files
 
-- `js/kit.js` drawing primitives for both modes, grain, dressing layers
-- `js/props.js` cast and props (traveller, agent, desk, globe, plane, cloud, sun, palm, ticket, suitcase)
-- `js/shots.js` ~30 set-ups (illustrated + schematic) and the section/cut list (`SECS`, `buildShots`)
+- `looks/film.html` the film; `looks/test-act-<x>.html` one act each; `looks/mvu.html` the look-test page
+- `js/kit.js js/props.js js/shots.js js/surreal.js js/symbols.js js/story.js` shared drawing, cast, older set-ups,
+  the burn-through, the colour arc, overlays and the shot builder
+- `js/acts/act-a.js .. act-e.js` the five acts (cut lists + set-ups), `js/acts/act-fix.js` shared replacements
+- `js/mvu/pixel.js` the screen-world engine, `js/mvu/shots-mvu.js` the signed-off Von Ulrich shots
 - `js/main.js` frame driver: `window.__frameJPEG(t)`, held drawings on twos, preview player
-- `looks/film.html` the page; open it in a browser to play with the song (click), arrows scrub, `?t=SECONDS`
 
 ## Running
 
-`PAGE=looks/film.html node check.mjs out/sheet.jpg t1 t2 ...` for a contact sheet.
-`PAGE=looks/film.html node render.mjs 0 403.4 out/<name>.mp4 4 24 0.6667` for the 720p draft (always on the song grid).
+`PAGE=looks/film.html node check.mjs out/sheet.jpg t1 t2 ...` for a contact sheet. Drafts render on GitHub with
+`tools/cloud-render/cloud-render.sh --draft` (see NEXT-SESSION.md for the recipe); short tests locally with
+`PAGE=looks/film.html node render.mjs t0 t1 out/<name>.mp4 4 24 0.6667`.

@@ -13,6 +13,27 @@ function e_flake(x, y, r, rot = 0, a = 1) { // a six-armed ink snowflake (ILL)
   X.strokeStyle = '#ffffff'; X.lineWidth = Math.max(1.6, r * .28); X.globalAlpha = a; X.lineCap = 'round'; X.stroke();
   X.strokeStyle = C.ink; X.lineWidth = Math.max(.8, r * .08); X.globalAlpha = a * .8; X.stroke(); X.globalAlpha = 1; X.restore();
 }
+// Draft 11: snow on the paper is drawn, never pixel squares. A hatched dot: white disc, an ink rim on its shadow side,
+// one hatch stroke across it.
+function e_dot(x, y, r, a = 1) {
+  X.globalAlpha = a; X.fillStyle = '#ffffff'; X.beginPath(); X.arc(x, y, r, 0, TAU); X.fill();
+  X.strokeStyle = C.ink; X.lineWidth = .9; X.lineCap = 'round'; X.globalAlpha = a * .55; X.beginPath(); X.arc(x, y, r, -.3, Math.PI * .8); X.stroke();
+  X.globalAlpha = a * .4; X.beginPath(); X.moveTo(x - r * .15, y + r * .6); X.lineTo(x + r * .6, y - r * .15); X.stroke(); X.globalAlpha = 1;
+}
+// falling snow in a box, dots and small flakes (replaces the kit's square snowFlakes inside act E's paper shots)
+function e_fall(n, T, x0, y0, w, h, seed = 77, sz = 3) {
+  const r = M32(seed);
+  for (let i = 0; i < n; i++) { const xx = x0 + r() * w, sp = 40 + r() * 80, y = y0 + ((r() * h + T * sp) % (h + 40)) - 20, x = xx + Math.sin(T * 1.3 + i) * 20, s = sz * (.5 + r());
+    if (i % 5 === 0) e_flake(x, y, s * 1.6, T * .4 + i); else e_dot(x, y, s * .6); }
+}
+// a fedora at the traveller's own scale (his local hat geometry), for a hat that has left his head
+function e_hat(x, y, s, rot) {
+  X.save(); X.translate(x, y); X.rotate(rot); X.scale(s, s); const k = 1 / s;
+  const hb = PE(0, 0, 46, 8); fillP(hb, '#3d2a1f'); iE(0, 0, 46, 8, 0, C.ink, 2 * k);
+  const cr = [[-26, 0], [-22, -34], [0, -28], [22, -34], [26, 0]], crp = PP(cr); fillP(crp, '#4b3426'); shade(crp, 0, -15, 34, [6, -4], .7, 4); iP(cr, true, C.ink, 2.4 * k, 1, true, .9 * k);
+  X.beginPath(); wP([[-25, -8], [25, -8]], false, .4 * k); stroke(C.ochre, 4 * k, .9);
+  X.restore();
+}
 function e_note(x, y, s = 1, col = '#3f5f8f') { X.save(); X.translate(x, y); X.scale(s, s); X.rotate(.15); fillP(PE(0, 0, 7, 5.4, -.4), col); iline(6, -1, 6, -24, col, 1.8 / s, 1, false); iline(6, -24, 14, -18, col, 1.8 / s, 1, false); X.restore(); }
 function e_bars(x0, x1, sp, y0, y1, w = 10) { // straight cage bars, ink with a cream glint
   X.beginPath(); for (let x = x0; x <= x1; x += sp) wl(x, y0, x, y1, 1.2, 12); stroke(C.ink, w, 1);
@@ -36,10 +57,68 @@ function e_glyph(kind, x, y) {
   X.restore();
 }
 
-// ---------- 371.88 her side of the glass: she looks up through the bars at his giant face ----------
+// ---------- draft 6: the pixel world at full strength (MVU-DIRECTION.md). She lives behind the glass. ----------
+// Only what is inside his phone is pixel (pixel.js); his hand, his face and the paper world stay in the Ngo hand.
+function e_pxBars(g, x0, w, sp, y0, y1, bw = 2) { // the screen's bars, from inside: black with a blue glint
+  for (let x = x0; x < w; x += sp) { pR(g, x, y0, bw, y1 - y0, PX.k); pR(g, x + bw, y0, 1, y1 - y0, PX.b); }
+}
+function e_pxRing(g, cx, cy, r, col, lw = 1) { if (r < 1) return; g.strokeStyle = col; g.lineWidth = lw; g.beginPath(); g.arc(cx, cy, r, 0, TAU); g.stroke(); }
+// her cell inside his phone (portrait, low res): status bar whose signal bars grow into the cage, a barred window
+// onto the sun she sells, her at her desk; her voice goes out and comes straight back off the glass
+function e_pxCell(g, w, h, T, p) {
+  const st = pxStep(T);
+  pR(g, 0, 0, w, h, PX.k); pDots(g, 1, 9, w, h, 3, PX.n, 1);
+  pR(g, 0, 0, w, 8, PX.n); for (let i = 0; i < 4; i++) pR(g, w - 16 + i * 3, 6 - (i + 1) * 1.2, 2, (i + 1) * 1.2 + .5, PX.w); pR(g, 3, 3, 9, 3, PX.g);
+  for (let i = 0; i < 2; i++) pZig(g, 0, 11 + i * 3, w, 1, 5, [PX.m, PX.y][i], 1, st * (i + 1));
+  // the window high on her wall: the sun she sells, barred
+  const wx = w / 2 - 9, wy = 18; pR(g, wx - 2, wy - 2, 22, 18, PX.u); pR(g, wx, wy, 18, 14, PX.b); pC(g, wx + 12, wy + 6, 3.4, PX.y); pR(g, wx, wy + 10, 18, 4, PX.c);
+  for (let i = 1; i < 4; i++) pR(g, wx + i * 4.5, wy, 1, 14, PX.k);
+  // the floor
+  pR(g, 0, h * .8, w, h * .2, PX.u); for (let i = 0; i < 3; i++) pZig(g, 0, h * (.84 + i * .05), w, 1, 6, PX.o, 1, st + i * 2);
+  // her voice: rings go out cyan to the glass and come back magenta, over and over (behind her, so her face stays clear)
+  const mx = w / 2, my = h * .64 - 31 * w / 122;
+  for (let i = 0; i < 3; i++) { const ph = (p * 3.2 + i / 3) % 1, out = ph < .5, r = 31 + (out ? ph * 2 : (1 - ph) * 2) * 16; e_pxRing(g, mx, my, r, out ? PX.c : PX.m, 1); }
+  pxAgent(g, w / 2, h * .64, w / 122, T, { talk: true });
+  // draft 11: four bars (the blueprint's BARS: 4), spaced so the two middle ones frame her TRAVEL sign
+  // (sign 22.6-41.5, lettering ~24.8-39.2) instead of crossing its first and last letters
+  e_pxBars(g, 5.5, w, 17, 8, h, 1);
+}
+SU.e_appInside = { mode: 'ill', f(q, p, a, T) { // chorus 4: she is inside his phone, in her own world; the screen's bars are her cage
+  stripes(C.paper, '#d9e0cf', 130, -.62, 0, C.sage); cam(960, 520, lerp(1, 1.08, eo(p)));
+  hand(1020, 900, 1.5, -.08);
+  const cell = pixWorld('eCell', 64, 126, (g, w, h) => e_pxCell(g, w, h, T, p));
+  phoneBody(960, 470, 2.2, -.04, (w, h) => blitPix(cell, 0, 0, w, h));
+  traveller(300, 1180, 1.6, { look: 1, mouth: sing(T), case: false }); cloud(300, 1180 - 720, .9, { rain: true }); noteRain(160, 520, 280, 300, 10);
+  bird(1500, 220, .9, flap()); gc(1500, 220, 120, C.orange, .6, 1.6);
+  for (let i = 0; i < 3; i++) gc(960, 470, 470 + i * 40 + ((FD * 6) % 40), C.teal, .35, 1.6, [6, 8], -1.9, -1.2);
+  consL([[0, 470, W, 470], [960, 0, 960, H]]);
+} };
+
+// ---------- 371.88 her side of the glass: the pixel world, looking out through the bars at his giant Ngo face ----------
+// The glass is the border between the two worlds: everything on her side is pixel, everything on his side is drawn.
+function e_pxInside(g, w, h, T, p, tap, tx, ty) {
+  const st = pxStep(T);
+  // the app's header from behind: lettering backwards, signal glyph on the wrong side
+  pR(g, 0, 0, w, 12, PX.k); pR(g, 0, 12, w, 13, PX.o); pR(g, 0, 24, w, 1, PX.k); pZig(g, 0, 4, w, 1, 7, PX.r, 1, st);
+  g.save(); g.translate(w / 2, 19); g.scale(-1, 1); pText(g, 0, 0, 'TRAVEL AGENT', PX.w, 9); g.restore();
+  for (let i = 0; i < 4; i++) pR(g, w - 38 - i * 4, 9 - (i + 1) * 1.6, 3, (i + 1) * 1.6, PX.w);
+  // a faint pixel grid on the inside of the glass: the screen seen from behind
+  pDots(g, 4, 30, w, 116, 12, PX.c, 6);
+  // Reverse view: glass, bars and touch ripples are beyond her, on the far wall.
+  // Draw them before the room and foreground occupants; bars meet the floor plane.
+  const fy = 147;
+  e_pxBars(g, 7, w, 25, 25, fy);
+  if (tap > 0) for (let i = 0; i < 4; i++) { const r = ((st * .9 + i * 5) % 20) + 4 + tap * 6; e_pxRing(g, tx, ty, r, i % 2 ? PX.y : PX.c, 1); }
+  // her floor and the lines of her room
+  pR(g, 0, fy, w, h - fy, PX.u); pDots(g, 0, fy + 3, w, h - fy, 3, PX.o, 1); pR(g, 0, fy, w, 1, PX.k);
+  for (let x = -40; x < w + 40; x += 25) pL(g, [[x, fy], [lerp(x, w / 2, -.6), h + 4]], PX.k, 1);
+  // her lamp
+  pR(g, 191, 118, 1.5, 28, PX.k); pP(g, [[185, 118], [198, 118], [195, 110], [188, 110]], PX.y); pR(g, 186, 145, 11, 3, PX.k);
+  pxAgent(g, w / 2, 142, .8, T, { talk: true, burst: false }); // no halo here: on her own side she is just a woman at a desk
+}
 SU.e_fromInside = { mode: 'ill', f(q, p, a, T) {
   stripes('#dfe6dd', '#d0dbcf', 150, -.62, 0, C.teal); cam(960, 540, lerp(1, 1.07, eo(p)));
-  // his face outside the glass, filling the sky, looking down into the phone
+  // his face outside the glass, filling the sky, looking down into the phone (the Ngo world)
   const fx = 960 + Math.sin(T * .7) * 18, fy = 470, face = PE(fx, fy + 200, 860, 900);
   fillP(face, '#efd9b9'); hatch(face, fx, fy + 200, 900, .6, 7, C.ink, 1, .55, [150, -90]); hatch(face, fx, fy + 200, 900, -.6, 10, C.ink, .9, .35, [260, -160]); iE(fx, fy + 200, 860, 900, 0, C.ink, 6);
   const blink = p > .56 && p < .63, tx = 960, ty = 820;
@@ -58,24 +137,13 @@ SU.e_fromInside = { mode: 'ill', f(q, p, a, T) {
   limb([[2400, 1300], [lerp(2300, 1820, tap), lerp(1150, 800, tap)], [fxT, fyT]], 120, {}, 1, '#efd9b9');
   const tip = PE(fxT, fyT, 72, 64, -.6); fillP(tip, '#f3dcbd'); hatch(tip, fxT, fyT, 80, .7, 5, C.ink, 1, .5, [16, 10]); iE(fxT, fyT, 72, 64, -.6, C.ink, 3.5);
   const nail = PE(fxT + 18, fyT - 6, 34, 26, -.6); fillP(nail, '#f7e7d2'); iE(fxT + 18, fyT - 6, 34, 26, -.6, C.ink, 2);
-  if (tap >= 1) for (let i = 0; i < 4; i++) gc(fxT - 30, fyT, 70 + i * 50 + ((FD * 7) % 50), C.orange, .8 - i * .15, 2.4);
-  // the glass: his blue notes running down it, a glare
+  // his blue notes running down the outside of the glass, and the glare on it
   noteRain(0, 0, W, H, 26);
   hatch(PP([[200, -100], [520, -100], [-100, 700], [-100, 380]]), 200, 300, 600, -.9, 9, C.cream, 3, .45);
   hatch(PP([[1500, -100], [1640, -100], [1100, 1200], [960, 1200]]), 1300, 500, 800, -1.2, 10, C.cream, 3, .4);
-  // the app's header seen from behind: lettering backwards
-  fillP(PR(-100, -100, W + 200, 170), '#2b2420'); fillP(PR(-100, 70, W + 200, 80), C.orange); iline(-100, 150, W + 100, 150, C.ink, 3);
-  X.save(); X.translate(960, 124); X.scale(-1, 1); lab(0, 0, 'TRAVEL AGENT', C.cream, 1, 40, 'center', 'alphabetic', 'bold'); X.restore();
-  for (let i = 0; i < 4; i++) { const bh = 12 + i * 10, bx = 1640 + i * 22; fillP(PR(bx, 40 - bh, 14, bh), C.cream, .9); }
-  // the bars: the screen of his phone, from inside
-  e_bars(40, W, 148, 150, 900, 14);
-  // her room: floor, desk, her looking up, reaching for the bars
-  const fl = PR(-200, 880, W + 400, 400); fillP(fl, '#c9a06a'); hatch(fl, 960, 1000, 1300, .15, 8, C.ink, .9, .4); iline(-200, 880, W + 200, 880, C.ink, 3);
-  X.beginPath(); for (let x = -200; x < W + 200; x += 150) { X.moveTo(x, 880); X.lineTo(lerp(x, 960, -.6), 1180); } stroke(C.ink, 1.2, .45);
-  agent(960, 900, 1.05, { look: .3, point: eo(seg(p, .15, .5)) });
-  desk(960, 900, 520, 1.05);
-  const lamp = PE(1150, 860, 30, 14); iline(1150, 870, 1150, 800, C.ink, 4); fillP(PP([[1115, 800], [1185, 800], [1165, 760], [1135, 760]]), C.ochre); iP([[1115, 800], [1185, 800], [1165, 760], [1135, 760]], true, C.ink, 2); fillP(lamp, '#5a3a22'); iE(1150, 860, 30, 14, 0, C.ink, 2);
-  gc(1110, 640, 60 + 20 * Math.sin(T * 6), C.teal, .6, 1.6, [5, 6]);
+  // her side: the pixel world, in front of everything
+  const inside = pixWorld('eIn', 320, 180, (g, w, h) => e_pxInside(g, w, h, T, p, tap >= 1 ? 1 : 0, fxT / 6, fyT / 6));
+  blitPix(inside, 0, 0, W, H);
   consL([[0, 880, W, 880], [960, 0, 960, H]]); consC([[960, 700, 500]]);
 } };
 
@@ -98,7 +166,7 @@ SU.e_sPhoneCage = { mode: 'sch', f(q, p, a, T) {
   X.restore();
   // the signal glyph, enlarged; leaders run from its bars down to the cage bars
   const gx = 1400, gy = 330; for (let i = 0; i < 4; i++) { const h2 = 40 + i * 40, x0 = gx + i * 56; const b = PR(x0, gy - h2, 40, h2); stip(b, x0 + 20, gy - h2 / 2, h2, h2 * 6, C.cyan, .8, 1.3); X.strokeStyle = C.cyan; X.lineWidth = 1.2; X.strokeRect(x0, gy - h2, 40, h2); gl(x0 + 20, gy, lerp(780, 1140, i / 3), 120, C.cyan, .35, 1, [3, 6]); }
-  lab(gx, gy + 34, 'SIGNAL  ▮▮▮▮', C.cyan, .9, 13); lab(gx, gy + 56, 'BARS: 4  ·  EXITS: 0', C.mag, .95, 13);
+  lab(gx, gy + 34, 'SIGNAL  ▮▮▮▮', C.cyan, .9, 13); lab(gx, gy + 84, 'BARS: 4 · EXITS: 0', C.mag, .95, 28, 'left', 'alphabetic', 'bold'); // punchline label (draft 11)
   bracket(752, 980, 1192, 960, C.cyan, .75, 'W 71.5 MM'); bracket(1250, 70, 1214, 940, C.cyan, .75, 'H 146.7 MM');
   lab(260, 360, 'OCCUPANT', C.lav, .7, 12); lab(260, 384, '1 AGENT · SCALE 1:48', C.white, .9, 15); gl(470, 378, 880, 640, C.lav, .45, 1, [2, 5]); gc(890, 650, 26, C.lav, .6);
   lab(260, 600, 'VOICE OUT', C.mag, .9, 13); lab(260, 622, 'REFLECTED 100%', C.mag, .7, 12);
@@ -145,6 +213,60 @@ SU.e_droste = { mode: 'ill', f(q, p, a, T) {
   while (depth-- > 0) X.restore();
 } };
 
+// ---------- 379.3 "Travel agent": the typing dots are a henge in the snow; his own footprints are the speech bubble ----------
+// Scale as meaning: three giant stones he can't move, a tiny him at the tail of the bubble he has paced into the snow
+// waiting for her. Stones sit where e_sTyping's dots sit (740/960/1180) and rise in the same rhythm, so the cut matches.
+const E_HZ = 360, E_GY0 = 560, E_GY1 = 930;
+function e_gnd(u, v) { return [960 + u * 600 * lerp(.82, 1.25, v), lerp(E_GY0, E_GY1, v)]; } // ground plane, u -1..1, v depth 0 (far) .. 1 (near)
+const E_BUB = (() => { // the bubble outline in ground coords, rounded, with its tail to the lower left
+  const pts = [], rU = .22, rV = .3, cs = [[1 - rU, rV, -Math.PI / 2, 0], [1 - rU, 1 - rV, 0, Math.PI / 2], [-1 + rU, 1 - rV, Math.PI / 2, Math.PI], [-1 + rU, rV, Math.PI, Math.PI * 1.5]];
+  for (const [cu, cv, a0, a1] of cs) {
+    if (a0 === Math.PI / 2) { pts.push([-.3, 1], [-.7, 1.42], [-.52, 1]); } // the tail, on the near edge
+    for (let i = 0; i <= 8; i++) { const a = lerp(a0, a1, i / 8); pts.push([cu + Math.cos(a) * rU, cv + Math.sin(a) * rV]); }
+  }
+  pts.push(pts[0]); const out = []; // resample evenly
+  for (let i = 0; i < pts.length - 1; i++) { const [u1, v1] = pts[i], [u2, v2] = pts[i + 1], n = Math.max(1, Math.round(Math.hypot(u2 - u1, (v2 - v1) * .8) / .045)); for (let k = 0; k < n; k++) out.push([lerp(u1, u2, k / n), lerp(v1, v2, k / n)]); }
+  return out;
+})();
+SU.e_dotHenge = { mode: 'ill', f(q, p, a, T) {
+  stripes('#e9e3d6', '#dcd5c4', 150, -.62, 0, C.sky); cam(960, 560, lerp(1.06, 1, eo(p)));
+  // the far ridge and the snowfield
+  const rg = PP([[-200, E_HZ + 30], [200, E_HZ - 20], [520, E_HZ + 10], [900, E_HZ - 40], [1300, E_HZ + 5], [1700, E_HZ - 30], [2200, E_HZ + 20], [2200, E_HZ + 160], [-200, E_HZ + 160]]);
+  fillP(rg, '#c9cfc4'); hatch(rg, 960, E_HZ + 40, 1300, .7, 9, C.ink, .8, .35); iP([[-200, E_HZ + 30], [200, E_HZ - 20], [520, E_HZ + 10], [900, E_HZ - 40], [1300, E_HZ + 5], [1700, E_HZ - 30], [2200, E_HZ + 20]], false, C.ink, 2.2);
+  const g = PR(-200, E_HZ + 110, W + 400, H); fillP(g, '#fbfbf6'); hatch(g, 960, 800, 1400, .06, 15, C.ink, .8, .16); iline(-200, E_HZ + 110, W + 200, E_HZ + 110, C.ink, 2.2);
+  // the trodden path: a blue-grey trench, then the prints, alternating left and right
+  const BP = E_BUB.map(([u, v]) => e_gnd(u, v)); X.lineJoin = 'round';
+  X.beginPath(); wP(BP, false, 1.2); stroke('#c7d3d6', 22, .9); X.beginPath(); wP(BP, false, 1.2); stroke(C.ink, 1.2, .35);
+  BP.forEach(([x, y], i) => { const [nx, ny] = BP[(i + 1) % BP.length], an = Math.atan2(ny - y, nx - x), v = (y - E_GY0) / (E_GY1 - E_GY0), sz = lerp(5, 9, v), sd = i % 2 ? 1 : -1, ox = -Math.sin(an) * 6 * sd, oy = Math.cos(an) * 3 * sd; fillP(PE(x + ox, y + oy, sz, sz * .5, an), '#6b6a70', .75); });
+  // drifts, hatched, and the stones' long shadows (same low sun as his)
+  for (const [dx, dy, dr] of [[180, 820, 150], [1700, 760, 190], [1250, 980, 120], [420, 560, 90]]) { const d = PE(dx, dy, dr, dr * .22); fillP(d, '#ffffff'); hatch(d, dx, dy + 8, dr, .15, 6, C.sky, 1.2, .5, [0, dr * .1]); iE(dx, dy, dr, dr * .22, 0, C.ink, 1.6, .8, false, .6, Math.PI, TAU); }
+  const act = Math.floor(T * 3.2) % 3, ph = (T * 3.2) % 1, SX = [560, 960, 1360], R0 = 165, BY = 660;
+  for (let i = 0; i < 3; i++) fillP(PP([[SX[i] - R0 * .8, BY], [SX[i] + R0 * .9, BY - 10], [SX[i] + R0 * 2.9, BY + 70], [SX[i] + R0 * .2, BY + 60]]), '#b9c4c8', .55);
+  // the three stones: the typing dots, giant, rising in the same rhythm as the schematic that follows
+  for (let i = 0; i < 3; i++) {
+    const x = SX[i], on = act === i, lift = on ? Math.sin(ph * Math.PI) * 150 : 0, r = R0, cy = BY - r - lift + 10;
+    fillP(PE(x, BY + 6, r * (1 - lift / 320), 26), C.ink, .25);
+    if (on && lift > 30) { X.save(); X.translate(x, BY + 6); X.scale(1, .3); ngoBurst(0, 0, r * .8, r * .8 + lift * 1.2, 22, FD * .05, '#d9a46a', C.cream); X.restore(); }
+    const side = PE(x + 22, cy + 6, r, r * 1.04); fillP(side, '#6f6a66'); hatch(side, x + 22, cy + 6, r, .9, 6, C.ink, .9, .5); iE(x + 22, cy + 6, r, r * 1.04, 0, C.ink, 3.4);
+    const st = PE(x, cy, r, r * 1.04); fillP(st, on ? '#aba59c' : '#9a9692'); shade(st, x, cy, r + 10, [50, -50], .7, 6); hatch(st, x, cy, r, -.9, 13, C.ink, .8, .22); iE(x, cy, r, r * 1.04, 0, C.ink, 4);
+    X.beginPath(); wP([[x - 50, cy - 90], [x - 18, cy - 40], [x - 44, cy + 14], [x - 20, cy + 60]], false, 1.4); stroke(C.ink, 2, .6); // a crack
+    for (const [lx, ly] of [[x + 60, cy - 30], [x + 30, cy + 70], [x - 80, cy + 40]]) fillP(PE(lx, ly, 16, 9, .4), '#86817b'); // lichen
+    fillP(PE(x + 6, cy - r * .9, 80, 20), '#ffffff'); iE(x + 6, cy - r * .9, 80, 20, 0, C.ink, 1.6, .9, false, .5, Math.PI, TAU); // snow cap
+    if (on && lift > 20) { for (let k = 0; k < 3; k++) gc(x, cy, r + 30 + k * 26 + ((FD * 5) % 26), C.orange, .7 - k * .18, 2, null, Math.PI * .15, Math.PI * .85); iline(x - r - 24, cy - 20, x - r - 60, cy + 40, C.teal, 2.4, .8, false); iline(x + r + 24, cy - 20, x + r + 60, cy + 40, C.teal, 2.4, .8, false); }
+  }
+  // him, tiny, at the tail of the bubble, waiting on his phone
+  const [tx, ty] = e_gnd(-.7, 1.42), s = .4, armR = [2.6, -1.9];
+  fillP(PP([[tx - 10, ty], [tx + 260, ty - 60], [tx + 290, ty - 40], [tx + 20, ty + 8]]), '#b9c4c8', .7); // long shadow
+  traveller(tx, ty, s, { look: 1, mouth: sing(T), armR, case: true });
+  const [hx, hy] = handAt(tx, ty, s, armR);
+  const scr = pixWorld('eHenge', 8, 16, (g2, w, h) => { const st2 = pxStep(T); pR(g2, 0, 0, w, h, PX.k); pR(g2, 0, 0, w, 2, PX.o); for (let i = 0; i < 3; i++) pR(g2, 1 + i * 2.4, 8 - (act === i ? 2 : 0), 1.6, 1.6, act === i ? PX.y : PX.w); pR(g2, 1, 12, 6, 2, st2 % 2 ? PX.c : PX.b); });
+  phoneBody(hx + 2, hy - 18, .1, -.2, (w, h) => blitPix(scr, 0, 0, w, h));
+  gc(hx + 2, hy - 18, 26 + ((FD * 4) % 20), C.orange, .7, 1.6);
+  cloud(tx, ty - 365 * s - 90, .38, { rain: true });
+  snowFlakes(160, T, '#ffffff', .9, 3);
+  consL([[0, E_HZ + 110, W, E_HZ + 110], [960, 0, 960, H], [0, 495, W, 495]]); consC([[960, 495, 560]]);
+} };
+
 // ---------- 382.46 blueprint of the typing dots: the reply that is always about to arrive ----------
 SU.e_sTyping = { mode: 'sch', f(q, p, a, T) {
   schBG(); cam(960, 540, lerp(1.08, 1, eo(p)));
@@ -152,13 +274,20 @@ SU.e_sTyping = { mode: 'sch', f(q, p, a, T) {
   X.beginPath(); X.roundRect(420, 250, 1080, 440, 90); X.moveTo(560, 690); X.lineTo(470, 800); X.lineTo(680, 690); stroke(C.lav, 1.6, .9);
   X.save(); X.beginPath(); X.roundRect(420, 250, 1080, 440, 90); X.clip(); graticule(960, 470, 1080, 440, 30, C.lav, .1); X.restore();
   const act = Math.floor(T * 3.2) % 3;
+  // Draft 9 payoff: after three seconds of waiting the dots stop, slide together and become the pin that lands
+  // on the map in the next shot (e_answerHome), so the reply is born here instead of the blueprint just idling.
+  const mg = eo(seg(p, .7, .86)), pinK = eo(seg(p, .84, 1));
   for (let i = 0; i < 3; i++) {
-    const x = 740 + i * 220, on = act === i, y = 470 - (on ? 34 : 0);
+    const x = lerp(740 + i * 220, 960, mg), on = act === i && mg < .05, y = 470 - (on ? 34 : 0);
+    if (pinK > 0 && i !== 1) continue;
     gc(x, 470, 74, C.lav, .45, 1, [3, 5]); ticks(x, 470, 80, 36, 6, C.lav, .45, 1, 9);
     star(x, y, on ? 10 : 6, on ? C.mag : C.white, 1); gl(x, 470, x, y, C.mag, on ? .8 : 0, 1.4);
     X.beginPath(); for (let k = 0; k <= 60; k++) { const xx = x - 90 + k * 3, yy = 620 + Math.sin(k * .5 + T * 9 + i * 2) * (on ? 26 : 6); k ? X.lineTo(xx, yy) : X.moveTo(xx, yy); } stroke(on ? C.mag : C.cyan, 1.4, .85);
   }
-  lab(960, 330, 'TYPING …', C.white, .9, 22, 'center'); lab(960, 362, 'SHE IS WRITING BACK', C.lav, .6, 12, 'center');
+  if (pinK > 0) { const py = 480, h = 112 * pinK, pin = new Path2D(); pin.moveTo(960, py); pin.bezierCurveTo(900, py - h * .5, 910, py - h, 960, py - h); pin.bezierCurveTo(1010, py - h, 1020, py - h * .5, 960, py);
+    X.lineWidth = 2.4; X.strokeStyle = C.mag; X.globalAlpha = .95; X.stroke(pin); X.globalAlpha = 1; gc(960, py - h * .68, 16 * pinK, C.white, .9, 1.6);
+    gl(960, py, 960, py + 60 * pinK, C.mag, .6, 1, [4, 5]); ticks(960, py + 60 * pinK, 40, 24, 6, C.lav, .5 * pinK, 1, 6); }
+  lab(960, 330, pinK > 0 ? 'REPLY' : 'TYPING …', C.white, .9, 22, 'center'); if (!pinK) lab(960, 362, 'SHE IS WRITING BACK', C.lav, .6, 12, 'center');
   const el = Math.max(0, T - 379.3); lab(470, 880, 'T+ ' + el.toFixed(1) + ' S', C.cyan, .9, 18); bracket(470, 920, lerp(480, 1450, eo(p)), 920, C.cyan, .7, 'WAIT');
   const nx = 1600, ny = 880, an = -Math.PI + eo(p) * Math.PI * .97; gc(nx, ny, 130, C.lav, .5, 1, null, -Math.PI, 0); ticks(nx, ny, 130, 20, 8, C.lav, .6, 1, 5, -Math.PI, 0);
   gl(nx, ny, nx + Math.cos(an) * 120, ny + Math.sin(an) * 120, C.mag, 1, 2.4); lab(nx, ny + 34, 'REPLY ETA', C.lav, .7, 12, 'center');
@@ -172,13 +301,18 @@ const E_STOPS = [[740, 220, 'palm'], [1620, 210, 'booth'], [1660, 720, 'marquee'
 SU.e_answerHome = { mode: 'ill', f(q, p, a, T) {
   stripes(C.paper, '#e8dcc0', 140, -.62, 0, C.ochre); cam(960, 560, lerp(1, 1.05, eo(p)));
   const gr = PR(-200, 990, W + 400, 300); fillP(gr, '#cdbb98'); hatch(gr, 960, 1100, 1400, .2, 8, C.ink, .8, .32); iline(-200, 990, W + 200, 990, C.ink, 2.6);
-  traveller(330, 1010, 1.15, { look: 1, mouth: sing(T), armR: [2.6, -1.9], case: false });
-  phoneBody(366, 651, .23, -.2, (w, h) => appScreen(w, h, T, 'chat'));
+  // decision: the reply is drawn. Inside his phone she is pixels; once the bubble is out through the glass it belongs
+  // to his paper world, so the map is in the Ngo hand. Only the screen it comes from is pixel.
+  const armR = [2.6, -1.9], [hx0, hy0] = handAt(330, 1010, 1.15, armR);
+  traveller(330, 1010, 1.15, { look: 1, mouth: sing(T), armR, case: false });
+  const scr = pixWorld('eAns', 16, 32, (g, w, h) => { const st = pxStep(T); pR(g, 0, 0, w, h, PX.k); pR(g, 0, 0, w, 3, PX.o); pBurst(g, w / 2, 15, 3, 7, 10, st * .2, PX.y, PX.o); pR(g, w / 2 - 2, 11, 4, 5, PX.f); pR(g, w / 2 - 2, 10, 4, 1, PX.r); pR(g, w / 2 - 3, 16, 6, 6, PX.r); pR(g, 2, 24, 12, 5, PX.c); for (let i = 0; i < 3; i++) pR(g, 4 + i * 3, 26, 2, 1 + (st + i) % 2, PX.w); });
+  const phx = hx0 + 8, phy = hy0 - 34; phoneBody(phx, phy, .3, -.2, (w, h) => blitPix(scr, 0, 0, w, h));
+  const th = PE(hx0 - 8, hy0 - 14, 9, 16, -.5); fillP(th, '#efd9b9'); iE(hx0 - 8, hy0 - 14, 9, 16, -.5, C.ink, 1.8); // his thumb over the phone's edge
   cloud(330, 1010 - 520 * 1.15, .7, { rain: true }); souvenirsOn(130, 1000, T, .8);
-  // the bubble grows out of the phone
-  const u = eo(seg(p, 0, .28)), ax = 430, ay = 600;
+  // the bubble grows out of the top of the phone
+  const u = eo(seg(p, 0, .28)), ax = phx + 22, ay = phy - 70;
   X.save(); X.translate(ax, ay); X.scale(u, u); X.translate(-ax, -ay);
-  const bub = new Path2D(); bub.roundRect(620, 110, 1180, 760, 70); const tail = PP([[640, 720], [430, 600], [640, 630]]);
+  const bub = new Path2D(); bub.roundRect(620, 110, 1180, 760, 70); const tail = PP([[640, 720], [ax, ay], [640, 630]]);
   const all = new Path2D(); all.addPath(bub); all.addPath(tail); fillP(all, C.cream); hatch(all, 1200, 490, 900, .7, 10, C.ink, .8, .15);
   X.save(); X.clip(PR(660, 150, 1100, 680));
   fillP(PR(660, 150, 1100, 680), '#cfdcd4'); hatch(PR(660, 150, 1100, 680), 1200, 490, 700, -.3, 7, C.teal, 1, .35);
@@ -194,10 +328,10 @@ SU.e_answerHome = { mode: 'ill', f(q, p, a, T) {
   if (p > .66) {
     const d = eo(seg(p, .66, .8)), py = lerp(140, 400, d); const pin = new Path2D(); pin.moveTo(1180, py); pin.bezierCurveTo(1120, py - 60, 1130, py - 120, 1180, py - 120); pin.bezierCurveTo(1230, py - 120, 1240, py - 60, 1180, py);
     fillP(pin, C.brick); hatch(pin, 1180, py - 70, 70, .7, 4, C.ink, 1, .55, [10, -6]); X.lineWidth = 3; X.strokeStyle = C.ink; X.stroke(pin); fillP(PE(1180, py - 82, 14, 14), C.cream); iE(1180, py - 82, 14, 14, 0, C.ink, 2);
-    if (d >= 1) { for (let i = 0; i < 3; i++) gc(1180, 440, 50 + i * 40 + ((FD * 6) % 40), C.orange, .8 - i * .2, 2.4); const tg = PR(1060, 486, 240, 40); fillP(tg, C.cream); iBox(1060, 486, 240, 40, C.ink, 2); lab(1180, 514, 'YOU ARE HERE', C.brick, 1, 18, 'center', 'alphabetic', 'bold'); }
+    if (d >= 1) { for (let i = 0; i < 3; i++) gc(1180, 440, 50 + i * 40 + ((FD * 6) % 40), C.orange, .8 - i * .2, 2.4); const tg = PR(1020, 480, 320, 54); fillP(tg, C.cream); iBox(1020, 480, 320, 54, C.ink, 2); lab(1182, 517, 'YOU ARE HERE', C.brick, 1, 28, 'center', 'alphabetic', 'bold'); } // punchline label, 28 bold (draft 11)
   }
   X.restore();
-  X.lineWidth = 3; X.strokeStyle = C.ink; X.stroke(bub); iline(620, 636, 620, 714, C.cream, 7, 1, false, .3); iP([[622, 630], [430, 600], [622, 720]], false, C.ink, 3);
+  X.lineWidth = 3; X.strokeStyle = C.ink; X.stroke(bub); iline(620, 636, 620, 714, C.cream, 7, 1, false, .3); iP([[622, 630], [ax, ay], [622, 720]], false, C.ink, 3);
   X.restore();
   consL([[0, 990, W, 990], [1180, 0, 1180, H]]); consC([[1180, 470, 420]]);
 } };
@@ -211,26 +345,49 @@ const E_WORLD = [
   [[330, 400], [200, 440], [330, 400], [430, 380], [330, 400], [260, 330], [330, 400], [420, 470]],
   [[-100, 620], [500, 600], [700, 520], [1200, 540], [1500, 600], [2100, 610]],
 ];
+// the top edge of cloud()'s blob union in its local coords (x -132..132), for a snow cap that sits ON the cloud
+const E_CLOUD_BL = [[-80, 0, 52], [-30, -30, 64], [30, -22, 58], [80, 4, 46], [0, 12, 60]];
+function e_cloudTop(x) { let y = 1e9; for (const [a, b, r] of E_CLOUD_BL) { const d = (x - a) / r; if (Math.abs(d) < 1) y = Math.min(y, b - r * .82 * Math.sqrt(1 - d * d)); } return y; }
+function e_cloudCap(x, y, s, k) { // k 0..1: how much snow has settled on top
+  if (k <= .02) return;
+  const top = [], bot = [], xr = 118;
+  for (let i = 0; i <= 28; i++) { const lx = lerp(-xr, xr, i / 28), yt = e_cloudTop(lx), th = 24 * k * Math.sqrt(Math.max(0, 1 - Math.pow(lx / xr, 2))) + 2 * Math.sin(i * 1.9);
+    top.push([x + lx * s, y + (yt - Math.max(0, th)) * s]); bot.push([x + lx * s, y + (yt + 5) * s]); }
+  const cap = PP(top.concat(bot.reverse())); fillP(cap, '#ffffff'); hatch(cap, x, y - 60 * s, 130 * s, .25, 6, C.sky, 1, .45, [0, 14 * s]);
+  iP(top, false, C.ink, 1.8, 1, false, .5);
+}
+const E_FZ_LEN = 392.08 - 387.84; // e_freeze's length, so the fall can be integrated from the shot's own clock
 SU.e_freeze = { mode: 'ill', f(q, p, a, T) {
-  paperOnly('#efe8d6'); illDress(); cam(960, 560, lerp(1.04, 1, eo(p)));
+  // draft 11: the camera tilts up with the freeze line to the cloud, so this and e_globeBlow are not 7.6 s of one layout
+  paperOnly('#efe8d6'); illDress(); const tu = eio(seg(p, .4, 1)); cam(lerp(960, 900, tu), lerp(560, 470, tu), lerp(1.02, 1.32, tu));
   // what is left of the world, shrinking into him
   const rr = lerp(1500, 260, eo(seg(p, 0, .8)));
   X.save(); X.clip(PE(900, 640, rr * 1.35, rr)); stripes(C.paper, '#d9dccb', 130, -.62, 0, C.sage); X.restore();
   iE(900, 640, rr * 1.35, rr, 0, C.ink, 2, .7, false, 3);
   const keep = 1 - eo(seg(p, .05, .85));
   for (const l of E_WORLD) { const d = dens(l, 14), n = Math.floor(d.length * keep); if (n > 1) { iP(d.slice(0, n), false, C.ink, 2.6, 1, true, 1.2); const [x, y] = d[n - 1]; star(x, y, 3, C.orange, .8); } }
-  if (keep > .3) { X.globalAlpha = keep; lab(1535, 462, 'ANYWHERE', C.ink, 1, 22, 'center', 'alphabetic', 'bold'); X.globalAlpha = 1; }
+  if (keep > .3) { X.globalAlpha = keep; lab(1537, 461, 'ANYWHERE', C.ink, 1, 28, 'center', 'alphabetic', 'bold'); X.globalAlpha = 1; } // punchline label (draft 11), inside its sign board 1430-1640 x 420-480
   // him, his cloud, and the freeze line climbing from the ground to the cloud
   const s = 1.25, tx = 900, ty = 1000, cy = ty - 520 * s;
   traveller(tx, ty, s, { look: 0, case: true, mouth: 0 });
   souvenirsOn(tx + 130, ty, T, .8);
-  const fz = lerp(1060, cy + 40, eo(seg(p, .1, .9))), sp = lerp(260, 50, eo(p)), r = M32(919);
+  // draft 11: the fall is integrated from the shot's clock (T * a changing speed made the notes jump every drawing),
+  // and a note crossing the freeze line visibly turns into a flake: it shrinks and tips, a frost ring flashes, the
+  // flake's arms grow out of it over the next ~110 px
+  const lt = p * E_FZ_LEN, fall = 210 * lt - 16 * lt * lt, BAND = 110;
+  const fz = lerp(1060, cy + 40, eo(seg(p, .1, .9))), r = M32(919);
   for (let i = 0; i < 46; i++) {
-    const x = tx - 230 + r() * 460, y0 = cy + 50, y = y0 + ((r() * 640 + T * sp * (.8 + r() * .4)) % 640), wob = Math.sin(T * 2 + i) * 10;
-    if (y < fz) e_note(x + wob, y, 1.2); else e_flake(x + wob, y, 9 + r() * 6, T * .5 + i);
+    const x = tx - 230 + r() * 460, y0 = cy + 50, v = .8 + r() * .4, fr = 9 + r() * 6, y = y0 + ((r() * 640 + fall * v) % 640), wob = Math.sin(T * 2 + i) * 10, xx = x + wob;
+    const m = (y - fz) / BAND;
+    if (m < 0) e_note(xx, y, 1.3);
+    else if (m < 1) {
+      const nk = 1 - eo(cl(m * 1.6)); if (nk > .02) { X.save(); X.translate(xx, y); X.rotate(m * 1.4); e_note(0, 0, 1.3 * nk, '#6f8fb8'); X.restore(); }
+      if (m > .15 && m < .7) { const rk = (m - .15) / .55; gc(xx, y - 6, 8 + rk * 22, C.sky, .9 * (1 - rk), 2.2); ticks(xx, y - 6, 6 + rk * 16, 6, 4 + rk * 5, C.ink, .55 * (1 - rk), 1.2); }
+      e_flake(xx, y, fr * eo(cl((m - .1) / .9)), T * .5 + i);
+    } else e_flake(xx, y, fr, T * .5 + i);
   }
   cloud(tx, cy, .9, {});
-  if (p > .45) { const k = eo(seg(p, .45, .9)); const mnd = PE(tx, ty - 334 * s, 50 * s, 10 * k * s); fillP(mnd, '#ffffff'); iE(tx, ty - 334 * s, 50 * s, 10 * k * s, 0, C.ink, 1.6, 1, false, .5, Math.PI, TAU); const cm = PE(tx, cy - 40, 150, 26 * k); fillP(cm, '#ffffff'); iE(tx, cy - 40, 150, 26 * k, 0, C.ink, 1.6, 1, false, .5, Math.PI, TAU); }
+  if (p > .45) { const k = eo(seg(p, .45, .9)); const mnd = PE(tx, ty - 334 * s, 50 * s, 10 * k * s); fillP(mnd, '#ffffff'); iE(tx, ty - 334 * s, 50 * s, 10 * k * s, 0, C.ink, 1.6, 1, false, .5, Math.PI, TAU); e_cloudCap(tx, cy, .9, k); }
   gl(tx - 420, fz, tx + 420, fz, C.teal, .8, 1.6, [8, 8]); lab(tx + 430, fz + 6, '0 °C', C.teal, .9, 16);
   consL([[0, 1000, W, 1000], [tx, 0, tx, H]]); consC([[tx, 640, 600]]);
 } };
@@ -248,10 +405,12 @@ SU.e_mindSnow = { mode: 'ill', f(q, p, a, T) {
   fillP(PE(ox, oy + 100, 320, 90), '#ffffff'); iE(ox, oy + 100, 320, 90, 0, C.ink, 1.6, .8, false);
   for (const [px, ph] of [[ox - 170, 70], [ox - 120, 50], [ox + 150, 80], [ox + 200, 56]]) { const tr = PP([[px - ph * .35, oy + 40], [px + ph * .35, oy + 40], [px, oy + 40 - ph]]); fillP(tr, C.sage); hatch(tr, px, oy + 10, ph, .7, 3, C.ink, .8, .5); iP([[px - ph * .35, oy + 40], [px + ph * .35, oy + 40], [px, oy + 40 - ph]], true, C.ink, 1.4, 1, false, .3); }
   traveller(lerp(ox - 80, ox + 60, p), oy + 40, .16, { legs: walkPh(), case: true, look: 1 });
-  snowFlakes(60, T, '#ffffff', .95, 3);
+  e_fall(60, T, ox - orx, oy - ory, orx * 2, ory * 2, 77, 3);
   X.restore(); iE(ox, oy, orx, ory, 0, C.ink, 3.5);
-  // the hat lifts off like a lid
-  const lift = eo(seg(p, 0, .4)); X.save(); X.translate(ox + lift * 260, oy - 40 - lift * 200); X.rotate(-.1 - lift * .5);
+  // the hat lifts off like a lid, then rides the plume up and out of frame to the right (draft 11: it used to park
+  // with its crown cut by the top edge, a dark wedge for 1.5 s)
+  const lift = eo(seg(p, 0, .62)), [hX, hY] = bz([ox, oy - 40], [ox + 60, oy - 230], [ox + 640, oy - 230], [W + 520, oy - 120], lift), hs = lerp(1, .62, lift);
+  X.save(); X.translate(hX, hY); X.rotate(-.1 - lift * 1.1); X.scale(hs, hs);
   const brim = PE(0, 0, 330, 44); fillP(brim, '#3d2a1f'); iE(0, 0, 330, 44, 0, C.ink, 3.5);
   const cr = [[-180, 0], [-160, -170], [0, -140], [160, -170], [180, 0]], crp = PP(cr); fillP(crp, '#4b3426'); shade(crp, 0, -80, 200, [30, -20], .7, 5); iP(cr, true, C.ink, 3.5); iline(-176, -34, 176, -34, C.ochre, 16, 1, false);
   X.restore();
@@ -261,26 +420,63 @@ SU.e_mindSnow = { mode: 'ill', f(q, p, a, T) {
     const t = r(), sp2 = r() - .5, sz = 5 + r() * 7; if (t > reach) continue;
     const [bx, by] = bz([ox, oy - 40], [ox + 120, oy - 300], [ox + 700, oy - 280], [W + 100, oy + 120], t);
     const x = bx + sp2 * t * 700 + Math.sin(T * 2 + i) * 14, y = by + sp2 * t * 360 + ((T * 40 + i * 7) % 30);
-    if (i % 9 === 0) e_flake(x, y, sz * 2.2, T + i); else { X.fillStyle = '#ffffff'; X.fillRect(x, y, sz, sz); X.strokeStyle = C.ink; X.globalAlpha = .45; X.lineWidth = .8; X.strokeRect(x, y, sz, sz); X.globalAlpha = 1; }
+    if (i % 9 === 0) e_flake(x, y, sz * 2.2, T + i); else if (i % 3 === 0) e_flake(x, y, sz * 1.1, T * .7 + i); else e_dot(x, y, sz * .55 + .8); // draft 11: drawn flakes and hatched dots, no squares
   }
   for (let i = 0; i < 3; i++) gc(ox, oy, orx + 40 + i * 50 + ((FD * 6) % 50), C.teal, .55, 1.6, null, Math.PI * 1.05, Math.PI * 1.95);
   consL([[0, oy, W, oy], [hx, 0, hx, H]]); consC([[ox, oy, 420]]);
 } };
 
+// ---------- 392.08 "I feel like I'm naked": the snow globe, given room; the hat now blows off on camera ----------
+// (snowGlobe drives the blow from q, which is already 1 at this cut, so in draft 5 the hat was gone from the first frame)
+// Draft 11: its own drawing (snowGlobe in shots.js is shared). The camera pushes in on him so the hat and his coat
+// read at 720p; the beat is tight: a gust (0.4 s), the hat tumbles up and out of frame (1.1 s), his hand goes to his
+// bare head (0.7 s), held into "naked". Snow is drawn flakes and hatched dots, no squares.
+SU.e_globeBlow = { mode: 'ill', f(q, p, a, T) {
+  stripes('#e6e0d0', '#d8d0bd', 140, -.62, 0, C.sky);
+  const pz = eio(seg(p, 0, .45)); cam(960, lerp(540, 600, pz), lerp(1.12, 2.1, pz));
+  const cx = 960, cy = 470, r = 380, ball = PE(cx, cy, r, r), gx = cx, gy = cy + 300, s = .95;
+  const bs = PP([[cx - 300, cy + 300], [cx + 300, cy + 300], [cx + 360, cy + 520], [cx - 360, cy + 520]]); fillP(bs, '#6b4a2e'); shade(bs, cx, cy + 410, 400, [30, -10], .8, 5); iP([[cx - 300, cy + 300], [cx + 300, cy + 300], [cx + 360, cy + 520], [cx - 360, cy + 520]], true, C.ink, 2.6);
+  fillP(ball, '#dfe8e6'); X.save(); X.clip(ball);
+  fillP(PE(cx, cy + 300, 360, 90), '#fbfbf6'); iE(cx, cy + 300, 360, 90, 0, C.ink, 1.6, .8, false);
+  const gust = eo(seg(p, .1, .3)), off = eio(seg(p, .22, .6)), reach = eio(seg(p, .56, .76));
+  // the wind: a few ink streaks crossing the globe left to right, moving on twos
+  if (gust > 0) { X.setLineDash([46, 34]); X.lineDashOffset = -FD * 14; for (const [yy, bend] of [[400, -40], [520, 30], [610, -20], [700, 24]]) { X.beginPath(); X.moveTo(cx - 400, yy); X.quadraticCurveTo(cx, yy + bend, cx + 400, yy - 30); stroke(C.ink, 2, .32 * gust); } X.setLineDash([]); X.lineDashOffset = 0; }
+  // the snow, swirling harder in the gust: flakes behind him, small dots in front
+  const snow = (front) => { const rr = M32(9);
+    for (let i = 0; i < 260; i++) { const ang = rr() * TAU + T * (.3 + rr() * .5) + gust * rr() * 1.4, rad = rr() * r * .9, x = cx + Math.cos(ang) * rad, y = cy + Math.sin(ang) * rad * .8 + ((T * 30 + i) % 40), sz = 3 + rr() * 4;
+      if ((i % 3 === 0) === front) continue; if (front) e_dot(x, y, sz * .45); else if (i % 2) e_flake(x, y, sz * 1.5, T * .6 + i); else e_dot(x, y, sz * .55); } };
+  snow(false);
+  // him: hat on until the gust takes it; then his hand goes up to his bare head
+  const rest = arm(26, -262, -.3, -.1)[2], top = [4, -342];
+  traveller(gx, gy, s, { hat: off <= 0, look: 0, mouth: sing(T), armL: [.3, .1], armR: [-.3, -.1], handTo: reach > 0 ? [lerp(rest[0], top[0], reach), lerp(rest[1], top[1], reach)] : null, case: false });
+  // his coat tail streams out to the right in the gust (a slow flutter tied to FD, never a two-drawing flip)
+  if (gust > 0) {
+    const fl = gust * (34 + 16 * Math.sin(FD * .35)), lf = gust * (10 + 8 * Math.sin(FD * .35 + 1.3));
+    const fp = [[34, -196], [50, -118], [50 + fl * 1.15, -104 - lf], [44 + fl * .8, -140 - lf * .6], [40 + fl * .35, -176]].map(([x, y]) => [gx + x * s, gy + y * s]);
+    const fpp = PP(fp); fillP(fpp, C.teal); shade(fpp, gx + 60 * s, gy - 140 * s, 60, [-8, -6], .9, 5); iP(fp, true, C.ink, 2.2, 1, true, .8);
+  }
+  // the hat, at his own hat's size, is torn off his head, tumbles one turn on the wind and lands in the snow beside
+  // him, where it stays (it keeps inside the globe's burn-clear zone; a hat flying out of frame went under the holes)
+  if (off > 0) { const [hX, hY] = bz([gx, gy - 330 * s], [gx + 90, gy - 350], [gx + 190, gy - 200], [gx + 125, gy - 8], off); e_hat(hX, hY, s, off * TAU); }
+  snow(true); // in front of him: dots only, so his face and the hat stay readable
+  X.restore();
+  hatch(ball, cx, cy, r, .8, 7, C.ink, .9, .35, [r * .2, -r * .2]); iE(cx, cy, r, r, 0, C.ink, 3); X.beginPath(); wE(cx - 120, cy - 150, 160, 120, -.6, 1, 30, Math.PI * 1.1, Math.PI * 1.5); stroke(C.cream, 8, .7);
+  consL([[0, cy, W, cy], [cx, 0, cx, H]]); consC([[cx, cy, r + 80]]);
+  gc(cx, cy, r + 40, C.teal, .7, 1.6, null, -1, -1 + eo(p) * 2.4);
+} };
+
 // ---------- the cut list ----------
 var CUTS_E = [
-  [365.5, 'appInside', {}],                               // "Travel agent": she is tiny inside his phone, the screen's bars a cage
-  [368.28, 'e_sPhoneCage', {}],                           // blueprint: signal bars = cage bars, her voice bounces back
-  [371.88, 'e_fromInside', {}],                           // "travel agent": her side of the glass, his giant face, his finger taps
-  [375.08, 'e_droste', { loops: 1.5 }],                   // instrumental: him over his phone / her over her monitor, forever
-  [379.3, 'phoneApp', { screen: 'chat', z0: 1.12, z1: 1.3, fy: 440 }], // "Travel agent": the chat, her typing dots
+  [365.5, 'e_appInside', {}],                             // "Travel agent": she is inside his phone, in her pixel world; the screen's bars a cage, her voice bounces back
+  [368.28, 'e_sPhoneCage', {}],                           // blueprint: signal bars = cage bars, her voice reflected
+  [371.88, 'e_fromInside', {}],                           // "travel agent": her side of the glass is the pixel world; his giant drawn face beyond it
+  [373.48, 'mvu_droste', { loops: 3.5, exitAt: 1 - 1.4 / 8.98, exitEnd: (382 + 10 / 24 - 373.48) / 8.98, exitLevel: 4, exitScene: 'e_sTyping', exitCue: 382.46 }], // enter the final screen on "I've"
   [382.46, 'e_sTyping', {}],                              // "I've got to know": blueprint of the typing dots
   [385.18, 'e_answerHome', {}],                           // "know": her reply is a map; the pin lands on the shop he started from
   [387.84, 'e_freeze', {}],                               // instrumental: the world un-draws, his notes freeze into snow
-  [392.08, 'snowGlobe', { blow: 1 }],                     // "I feel like": inside the snow globe
-  [395.08, 'sSnow', {}],                                  // "naked": the crystal, clothing none
-  [397.14, 'e_mindSnow', {}],                             // "my mind's": the hat lifts and the snow pours out of his head
-  [398.76, 'snowSettle', {}],                             // "the snow": the snow draws the shopfront back
-  [400.0, 'shopClosed', {}],                              // closed, for lease, him on his phone, little Bob passing
-  [402.3, 'sEnd', {}],                                    // the loop closes
+  [392.08, 'e_globeBlow', {}],                           // "I feel like I'm": inside the snow globe, longer; the hat blows off on camera
+  [395.5, 'sSnow', {}],                                   // "naked" (vocal onset 395.5): the crystal, clothing none (shorter)
+  [396.8, 'e_mindSnow', {}],                              // "my mind's" (onset 396.8): the hat lifts and the snow pours out of his head (longer)
+  [398.76, 'snowSettle', {}],                             // assembler's from here: "the snow" draws the shopfront back
+  [400.0, 'shopClosed', {}],                              // closed, for lease, little Bob passing
 ];
