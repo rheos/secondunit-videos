@@ -6,7 +6,8 @@ reference code to study, proof the look runs, and a baseline to hold a recipe-on
 
 ## The rules
 
-- **Self-contained.** Copy the folder anywhere, then `npm install && npm run render`. Nothing reaches outside it: no
+- **Self-contained and self-explaining.** Copy the folder anywhere, then `npm install && npm run check && npm run render`.
+  A member's Claude or Codex should get there from `AGENTS.md` alone, with no other instructions. Nothing reaches outside it: no
   `../cleanline`, no film folder, no shared tools. Needs Node, ffmpeg and Google Chrome (Playwright's own Chromium works
   too, with software WebGL).
 - **Nothing from the client film.** No artist, client or song names, no lyrics or lyric timing, no footage, stems or
@@ -25,8 +26,12 @@ segments/
   README.md        this file
   scrub.mjs        the client-material check (node scrub.mjs)
   <slug>/
-    README.md      the look, where the code came from (commit and paths), what changed, what is a stand-in
-    package.json   playwright only; npm run render, npm run preview
+    AGENTS.md      for the member's agent (Codex reads it): the commands in order, what makes the look, how to reuse it
+    CLAUDE.md      `@AGENTS.md`, so Claude Code reads the same page
+    segment.json   the manifest: requirements, optional and paid steps, stand-ins, commands, output, source commit
+    check.mjs      npm run check: tests Node, ffmpeg, the browser and WebGL2, prints the fix for this OS
+    README.md      for a person: the look, where the code came from (commit and paths), what changed, what is a stand-in
+    package.json   playwright only; npm run check, npm run render, npm run preview
     segment.html   the page: draws frame t; opened without ?offline=1 it loops the 15 s
     render.mjs     writes out/<slug>-segment_f00000-f00360_24fps_review-720p.mp4 (1280x720, no audio)
     preview.mjs    serves the folder on localhost to watch it live

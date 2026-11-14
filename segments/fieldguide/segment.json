@@ -1,0 +1,16 @@
+{
+  "slug": "fieldguide",
+  "title": "Field-guide illustration",
+  "kind": "code",
+  "summary": "Hatched pressure-ribbon ink on cream paper over diagonal stripes, cut on the beat against navy blueprint plates. Scene: a gardener and a sunflower.",
+  "duration_s": 15, "fps": 24, "size": [1280, 720], "audio": "none (a fixed 120 bpm grid)",
+  "requires": { "node": ">=20", "ffmpeg": true, "browser": "Google Chrome, or Playwright Chromium", "webgl2": false },
+  "optional": [],
+  "stand_ins": [],
+  "commands": { "install": "npm install", "check": "npm run check", "render": "npm run render", "preview": "npm run preview" },
+  "output": "out/fieldguide-segment_f00000-f00360_24fps_review-720p.mp4",
+  "edit": ["js/scene.js", "clock.js", "film.config.js"],
+  "keep": ["engine/", "looks/fieldguide.js", "looks/blueprint.js"],
+  "agent_notes": "AGENTS.md",
+  "source": { "repo": "rheos/secondunit-videos", "commit": "560a5a5" }
+}
