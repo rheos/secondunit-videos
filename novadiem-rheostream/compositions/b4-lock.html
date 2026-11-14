@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b4 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rs50" id="b4" data-composition-id="b4" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rs51" id="b4-content" class="layer">
+          <div data-hf-id="hf-rs52" id="b4-lab-l" class="plate-label left">FIG. IV</div>
+          <div data-hf-id="hf-rs53" id="b4-lab-r" class="plate-label right">THE LOCK</div>
+          <svg data-hf-id="hf-rs54" id="b4-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rs55" class="statement">
+            <span data-hf-id="hf-rs56" id="b4-s1" class="phrase">Work</span>
+            <span data-hf-id="hf-rs57" id="b4-s2" class="phrase accent">survives crashes.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 51.48;
+          const K = BP.kit(tl, S, "IV");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("IV", w, n));
+          const svg = K.$("b4-svg");
+          const chip = (x, y, w, label) => {
+            const g = el("g", {}, svg);
+            el("rect", { class: "solid", x, y, width: w, height: 40 }, g);
+            el("rect", { class: "ln line", x, y, width: w, height: 40 }, g);
+            text(label, { class: "lab sm", x: x + 16, y: y + 27 }, g);
+            return { g, x, y, w };
+          };
+
+          // the lock: a chamber between two gates, with the channel running on either side
+          const chamber = RS.basin(svg, 520, 300, 480, 260, { level: 0.75, cls: "line-strong" });
+          const sides = el("path", { class: "ln line", d: "M190 560H506M1014 560H1290M190 365H506M1014 365H1290" }, svg);
+          const g1 = RS.gate(svg, 520, 300, 260);
+          const g2 = RS.gate(svg, 1000, 300, 260);
+          const chips = [chip(580, 392, 360, "THE SAVE"), chip(580, 442, 360, "ITS AUDIT ROW"), chip(580, 492, 360, "ITS EVENT")];
+          const commit = RS.stampBox(svg, "ONE COMMIT", 760, 238, 230, { ok: true, rot: -3 });
+          // the worker: a mill wheel, its lease shown as a dial
+          const wheel = (cx, cy) => {
+            const g = el("g", {}, svg);
+            const rim = el("circle", { class: "ln line-strong", cx, cy, r: 100 }, g);
+            const spokes = el("path", { class: "ln line", d: [0, 30, 60, 90, 120, 150].map((a) => { const r = (a * Math.PI) / 180; return `M${cx - 100 * Math.cos(r)} ${cy - 100 * Math.sin(r)}L${cx + 100 * Math.cos(r)} ${cy + 100 * Math.sin(r)}`; }).join("") }, g);
+            const hub = el("circle", { class: "ln line-strong solid", cx, cy, r: 14 }, g);
+            return { g, rim, spokes, hub, cx, cy };
+          };
+          const w1 = wheel(1400, 470);
+          const w2 = wheel(1400, 470);
+          const wT = text("A WORKER", { class: "lab sm", x: 1400, y: 610, "text-anchor": "middle" }, svg);
+          const w2T = text("ANOTHER WORKER", { class: "lab sm", x: 1400, y: 610, "text-anchor": "middle" }, svg);
+          const leaseLine = el("path", { class: "ln thin line-strong", d: "M940 512C1100 512 1180 470 1286 470" }, svg);
+          const dial = el("circle", { class: "ln line", cx: 1400, cy: 236, r: 46 }, svg);
+          const hand = el("path", { class: "ln line-strong", d: "M1400 236V198" }, svg);
+          const leaseT = text("LEASE", { class: "lab sm", x: 1466, y: 230 }, svg);
+          const outT = text("RUNS OUT", { class: "lab sm acc", x: 1466, y: 258 }, svg);
+          const dies = text("PROCESS DIES", { class: "lab sm acc", x: 1530, y: 400 }, svg);
+          const xx = RS.cross(svg, 1400, 470, 30);
+          const once = RS.stampBox(svg, "DONE ONCE", 1400, 680, 220, { ok: true, rot: -3 });
+          const dedup = text("its dedup row commits with its effect", { class: "ty sm", x: 1400, y: 734, "text-anchor": "middle" }, svg);
+          // no broker, no workflow engine: ordinary tables
+          const nb = [text("BROKER", { class: "lab dim", x: 200, y: 240 }, svg), text("WORKFLOW ENGINE", { class: "lab dim", x: 200, y: 290 }, svg)];
+          const strikes = [el("path", { class: "ln acc-s", d: "M192 232H318", style: "stroke-width: 3" }, svg), el("path", { class: "ln acc-s", d: "M192 282H448", style: "stroke-width: 3" }, svg)];
+          const grid = el("path", { class: "ln thin line", d: "M520 620H1000V740H520ZM520 660H1000M520 700H1000M640 620V740M760 620V740M880 620V740" }, svg);
+          const gridT = text("ORDINARY TABLES", { class: "lab sm", x: 500, y: 690, "text-anchor": "end" }, svg);
+          const P = RS.dot(svg);
+
+          // the inquiry drops into the lock, the chamber plate III pushed in on
+          RS.put(K, tl, P, 760, 250, R(52.0), { fade: 0.4 });
+          RS.showBasin(K, chamber, R(51.9), 0.7);
+          K.fade(K.$("b4-lab-l"), R(52.4), 0.4);
+          K.fade(K.$("b4-lab-r"), R(52.4), 0.4);
+          K.draw(sides, R(52.3), 0.7, "power1.out", false);
+          [g1, g2].forEach((g) => { K.draw(g.frame, R(52.4), 0.4, "power2.out", false); tl.set(g.plate, { y: -200 }, 0); K.fade(g.plate, R(52.5), 0.3); });
+          RS.ride(K, P, [[760, 345]], W("the"), { speed: 300, sound: "water" });
+          // "the save and its announcement are a single commit"
+          K.stamp(chips[0].g, W("save"), { origin: "760 412", sound: "card", from: 1.2 });
+          K.stamp(chips[1].g, W("announcement") - 0.25, { origin: "760 462", sound: "card", from: 1.2 });
+          K.stamp(chips[2].g, W("announcement") + 0.2, { origin: "760 512", sound: "card", from: 1.2 });
+          [g1, g2].forEach((g) => K.move(g.plate, W("single"), 0.3, { y: -200 }, { y: 0 }, { ease: "power3.in" }));
+          K.sfx("gate", W("single") + 0.3);
+          K.stamp(commit.g, W("commit"), { origin: "760 238" });
+          // "a worker leases the job"
+          [w1.rim, w1.spokes].forEach((n, i) => K.draw(n, W("worker") - 0.3 + i * 0.1, 0.45, "power2.out", i === 0));
+          K.fade(w1.hub, W("worker") - 0.1, 0.3);
+          K.typed(wT, W("worker"), { cps: 34, cursor: false });
+          K.draw(leaseLine, W("leases") - 0.1, 0.45);
+          K.draw(dial, W("leases"), 0.4, "power2.out", false);
+          K.fade(hand, W("leases") + 0.2, 0.2);
+          K.typed(leaseT, W("leases") + 0.1, { cps: 30, cursor: false });
+          const hs = W("leases") + 0.3, he = W("out") + 0.05;
+          tl.fromTo(hand, { rotation: 0, svgOrigin: "1400 236" }, { rotation: 360, svgOrigin: "1400 236", duration: he - hs, ease: "none", immediateRender: false }, hs);
+          K.sfx("crank", hs, { d: he - hs });
+          tl.fromTo(w1.spokes, { rotation: 0, svgOrigin: "1400 470" }, { rotation: 75, svgOrigin: "1400 470", duration: W("dies") - W("job"), ease: "none", immediateRender: false }, W("job"));
+          // "if the process dies halfway"
+          K.stamp(xx, W("dies"), { origin: "1400 470", from: 2 });
+          K.sfx("gate", W("dies") + 0.1);
+          tl.to(w1.g, { opacity: 0.3, duration: 0.3 }, W("halfway"));
+          K.typed(dies, W("dies") + 0.1, { cps: 34, cursor: false });
+          // "the lease runs out and the work runs again"
+          K.typed(outT, W("out") - 0.1, { cps: 30, cursor: false });
+          K.pulse(dial, W("out"), 2, 0.3, 0.12, { origin: "1400 236", sound: "tick" });
+          tl.to([w1.g, xx, dies, wT], { opacity: 0, duration: 0.3 }, W("work") - 0.1);
+          K.stamp(w2.g, W("runs", 2) - 0.1, { origin: "1400 470", sound: "card", from: 1.3 });
+          K.typed(w2T, W("runs", 2), { cps: 40, cursor: false });
+          tl.fromTo(w2.spokes, { rotation: 0, svgOrigin: "1400 470" }, { rotation: 240, svgOrigin: "1400 470", duration: 2.2, ease: "power1.inOut", immediateRender: false }, W("again"));
+          K.sfx("crank", W("again"), { d: 2.2 });
+          K.slam(K.$("b4-s1"), W("again") - 0.05, { stagger: 0.04 });
+          K.slam(K.$("b4-s2"), W("again") + 0.3, { stagger: 0.04 });
+          // "safely, never twice"
+          K.stamp(once.g, W("safely") + 0.1, { origin: "1400 680" });
+          K.typed(dedup, W("twice"), { cps: 48, cursor: false });
+          // "no broker, no workflow engine. Ordinary tables carry everything."
+          K.typed(nb[0], W("broker") - 0.15, { cps: 34, cursor: false });
+          K.draw(strikes[0], W("broker") + 0.25, 0.25);
+          K.typed(nb[1], W("workflow") - 0.1, { cps: 40, cursor: false });
+          K.draw(strikes[1], W("engine") + 0.25, 0.3);
+          K.draw(grid, W("ordinary") - 0.1, 0.8, "power1.inOut");
+          K.typed(gridT, W("tables"), { cps: 34, cursor: false });
+          chips.forEach((c, i) => K.pulse(c.g, W("carry") + i * 0.12, 1, 0.5, 0.03, { origin: `${c.x + c.w / 2} ${c.y + 20}` }));
+
+          // hand-off: the downstream gate lifts and the inquiry rides out, on to plate V's junction
+          K.move(g2.plate, R(69.4), 0.4, { y: 0 }, { y: -200 }, { sound: "valve" });
+          RS.ride(K, P, [[1012, 345], [1880, 345]], R(69.6), { speed: 1300 });
+          K.out(K.$("b4-content"), R(69.85), 0.45);
+          window.__timelines["b4"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

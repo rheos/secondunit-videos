@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b1 { position: absolute; inset: 0; }
+      </style>
+      <div data-hf-id="hf-rs20" id="b1" data-composition-id="b1" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rs21" id="b1-content" class="layer">
+          <div data-hf-id="hf-rs22" id="b1-lab-l" class="plate-label left">I</div>
+          <div data-hf-id="hf-rs23" id="b1-lab-r" class="plate-label right">THE PILE</div>
+          <svg data-hf-id="hf-rs24" id="b1-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rs25" class="statement">
+            <span data-hf-id="hf-rs26" id="b1-s1" class="phrase">Your working life,</span>
+            <span data-hf-id="hf-rs27" id="b1-s2" class="phrase accent">in a pile of tools.</span>
+          </div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 0;
+          const K = BP.kit(tl, S, "I");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("I", w, n));
+          const svg = K.$("b1-svg");
+
+          // five pools, each a tool holding a piece of your history (the same pools open plate II)
+          const POOLS = [
+            [190, 300, 280, 150],
+            [600, 210, 300, 170],
+            [1040, 330, 260, 140],
+            [1440, 210, 230, 120],
+            [1350, 520, 330, 150],
+          ];
+          const pools = POOLS.map(([x, y, w, h], i) => RS.basin(svg, x, y, w, h, { level: [0.5, 0.6, 0.45, 0.55, 0.5][i] }));
+          // streamlines that run into each pool and stop dead at its wall
+          const streams = POOLS.map(([x, y, w, h], i) => {
+            const yy = y + h * 0.7;
+            const d = `M${x - 150} ${yy - 60}C${x - 90} ${yy - 60} ${x - 70} ${yy} ${x - 12} ${yy}`;
+            const s = el("path", { class: "ln thin line", d }, svg);
+            const bar = el("path", { class: "ln line", d: `M${x - 12} ${yy - 12}V${yy + 12}` }, svg);
+            return { s, bar };
+          });
+          // what each tool holds: a few rows of history in the water
+          const rows = POOLS.map(([x, y, w, h]) => el("path", { class: "ln thin line-strong", d: `M${x + 30} ${y + h - 46}h${w * 0.45}M${x + 30} ${y + h - 28}h${w * 0.3}`, opacity: 0.7 }, svg));
+          const labs = [
+            text("FINDS THE WORK", { class: "lab sm", x: 330, y: 500, "text-anchor": "middle" }, svg),
+            text("TRACKS IT", { class: "lab sm", x: 750, y: 430, "text-anchor": "middle" }, svg),
+            text("REMEMBERS", { class: "lab sm", x: 1170, y: 520, "text-anchor": "middle" }, svg),
+          ];
+          // agent routines stitched between them
+          const zig = (x1, y1, x2, y2) => {
+            const n = 9, pts = [];
+            for (let i = 0; i <= n; i++) pts.push(`${(x1 + ((x2 - x1) * i) / n).toFixed(1)} ${(y1 + ((y2 - y1) * i) / n + (i % 2 ? -12 : 12) * (i && i < n ? 1 : 0)).toFixed(1)}`);
+            return el("path", { class: "ln thin line", d: "M" + pts.join("L") }, svg);
+          };
+          const stitches = [zig(484, 330, 586, 250), zig(914, 260, 1026, 360), zig(1314, 360, 1426, 260), zig(1555, 344, 1515, 506)];
+          const agentLab = text("AGENT ROUTINES", { class: "lab sm dim", x: 935, y: 228 }, svg);
+          // lids: each tool closes over what it holds
+          const lids = POOLS.map(([x, y, w]) => el("rect", { class: "ln line-strong solid", x: x - 16, y: y - 10, width: w + 32, height: 16 }, svg));
+          // the lead and the project it became, sealed in different tools
+          const leadT = text("LEAD", { class: "ty b", x: 220, y: 386 }, svg);
+          const projT = text("PROJECT", { class: "ty b", x: 630, y: 300 }, svg);
+          const reach = el("path", { class: "ln line-strong", d: "M330 284C340 200 460 170 560 196" }, svg);
+          const x1 = RS.cross(svg, 566, 200, 14);
+
+          K.fade(K.$("b1-lab-l"), R(1.2), 0.4);
+          K.fade(K.$("b1-lab-r"), R(1.2), 0.4);
+          // "living in a pile of tools"
+          pools.forEach((p, i) => RS.showBasin(K, p, W("working") + 0.1 + i * 0.32, 0.55));
+          streams.forEach((s, i) => {
+            K.draw(s.s, W("living") + i * 0.22, 0.6, "power1.out");
+            K.draw(s.bar, W("living") + i * 0.22 + 0.6, 0.12, "power2.out", false);
+            K.sfx("tick", W("living") + i * 0.22 + 0.6);
+          });
+          K.slam(K.$("b1-s1"), W("pile") - 0.3, { stagger: 0.035 });
+          K.slam(K.$("b1-s2"), W("tools") + 0.15, { stagger: 0.035 });
+          // "one finds the work, one tracks it, one remembers"
+          K.typed(labs[0], W("finds"), { cps: 34, cursor: false });
+          K.typed(labs[1], W("tracks"), { cps: 34, cursor: false });
+          K.typed(labs[2], W("remembers"), { cps: 34, cursor: false });
+          rows.forEach((r, i) => K.fade(r, W("finds") + i * 0.5, 0.4, 0.7));
+          // "and a few agent routines are stitched between them"
+          K.typed(agentLab, W("agent"), { cps: 34, cursor: false });
+          stitches.forEach((s, i) => K.draw(s, W("stitched") + i * 0.18, 0.45, "none", false));
+          K.sfx("crank", W("stitched"), { d: 1.1 });
+          // "each is useful"
+          pools.forEach((p, i) => K.pulse(p.water, W("useful") + i * 0.08, 1, 0.5, 0.06, { origin: `${p.x + p.w / 2} ${p.y + p.h}` }));
+          // "together they trap your history": the lids come down, one by one
+          lids.forEach((l, i) => K.move(l, W("trap") + i * 0.14, 0.22, { opacity: 0, y: -40 }, { opacity: 1, y: 0 }, { ease: "power3.in" }));
+          lids.forEach((l, i) => K.sfx("gate", W("trap") + i * 0.14 + 0.2));
+          // "the lead knows nothing of the project it became"
+          K.typed(leadT, W("lead") - 0.1, { cps: 30, cursor: false });
+          K.draw(reach, W("knows"), 0.5);
+          K.stamp(x1, W("nothing") + 0.1, { origin: "566 200", from: 1.8 });
+          K.typed(projT, W("project") - 0.05, { cps: 30, cursor: false });
+
+          // hand-off: plate II opens on these same pools, so this one only fades away
+          K.out(K.$("b1-content"), R(18.4), 0.4);
+          window.__timelines["b1"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

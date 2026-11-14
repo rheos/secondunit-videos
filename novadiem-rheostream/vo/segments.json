@@ -1,0 +1,92 @@
+[
+ {
+  "plate": "I",
+  "file": "seg-00-p.wav",
+  "seconds": 15.201,
+  "chars": 260,
+  "sha256": "19aa9dc5294e46438d4dc1c524dafa5a0b93dc71b3ab31f303a3815ca3cdf9cc",
+  "source": "seg-00.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "II",
+  "file": "seg-01-p.wav",
+  "seconds": 13.388,
+  "chars": 199,
+  "sha256": "ae7f562b9eacde81ccd0c2b394fcfbba63de7f3fcace18fad7c06f9bb70bd484",
+  "source": "seg-01.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "III",
+  "file": "seg-02-p.wav",
+  "seconds": 14.848,
+  "chars": 231,
+  "sha256": "21b7b916bc778b7ee78b7de0c7d4321629db2d78d79b27d40c5d0e8ce4c7ffb1",
+  "source": "seg-02.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "IV",
+  "file": "seg-03-p.wav",
+  "seconds": 16.513,
+  "chars": 234,
+  "sha256": "e3cb97106bab463baacee9d6c553aa1bd5e21b96d3de2e49f1c3807e90df43e1",
+  "source": "seg-03.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "V",
+  "file": "seg-04-p.wav",
+  "seconds": 14.546,
+  "chars": 225,
+  "sha256": "24ab5f0a6b94555c2b8335d3e39ed376fb38c90c896a7e505fde53cf46062aed",
+  "source": "seg-04.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "VI",
+  "file": "seg-05-p.wav",
+  "seconds": 17.458,
+  "chars": 251,
+  "sha256": "a2c6f1b5fe60c2da41102f3afde336bd546a541c5b3844307271a4b3ef4e064b",
+  "source": "seg-05.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "VII",
+  "file": "seg-06-p.wav",
+  "seconds": 15.93,
+  "chars": 238,
+  "sha256": "7fe694b762e6926b02775ae5a414de3e81ef47c043d08bb4e9a32e1409d7be09",
+  "source": "seg-06.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "VIII",
+  "file": "seg-07-p.wav",
+  "seconds": 11.646,
+  "chars": 171,
+  "sha256": "16559767a0cc234b56b1835f829137100ee5ddbe08676f8c80bd537d09c19606",
+  "source": "seg-07.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "IX",
+  "file": "seg-08-p.wav",
+  "seconds": 10.406,
+  "chars": 164,
+  "sha256": "ce9a2b57857ec840fcc0035b82498ceec21bf27789f309d8514cbad1b56154cb",
+  "source": "seg-08.mp3",
+  "tempo": 1.1
+ },
+ {
+  "plate": "X",
+  "file": "seg-09-p.wav",
+  "seconds": 15.498,
+  "chars": 245,
+  "sha256": "69c445843f7e0d3524926d22a2d963a04368f8442aaf2beb6642893058a23032",
+  "source": "seg-09.mp3",
+  "tempo": 1.1
+ }
+]

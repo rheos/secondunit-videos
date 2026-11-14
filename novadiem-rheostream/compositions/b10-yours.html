@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        #b10 { position: absolute; inset: 0; }
+        #b10-kick { position: absolute; left: 0; right: 0; top: 318px; text-align: center; font-family: var(--font-label); font-size: 30px; font-weight: 500; letter-spacing: 0.16em; color: var(--ink-dim); }
+        #b10-title { position: absolute; left: 0; right: 0; top: 392px; display: flex; justify-content: center; column-gap: 0.28em; font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); font-size: 100px; line-height: 1; white-space: nowrap; color: var(--ink); }
+        #b10-title .accent { color: var(--accent); }
+        #b10-foot { position: absolute; left: 0; right: 0; top: 742px; text-align: center; font-family: var(--font-label); font-size: 30px; font-weight: 500; letter-spacing: 0.2em; color: var(--line-strong); }
+      </style>
+      <div data-hf-id="hf-rsb0" id="b10" data-composition-id="b10" data-width="1920" data-height="1080">
+        <div data-hf-id="hf-rsb1" id="b10-content" class="layer">
+          <div data-hf-id="hf-rsb2" id="b10-lab-l" class="plate-label left">X</div>
+          <div data-hf-id="hf-rsb3" id="b10-lab-r" class="plate-label right">YOURS</div>
+          <svg data-hf-id="hf-rsb4" id="b10-svg" class="full" viewBox="0 0 1920 1080"></svg>
+        </div>
+        <div data-hf-id="hf-rsb5" id="b10-end" class="layer">
+          <svg data-hf-id="hf-rsb6" id="b10-end-svg" class="full" viewBox="0 0 1920 1080"></svg>
+          <div data-hf-id="hf-rsb7" id="b10-kick">YOUR WORKING LIFE, IN ONE CURRENT.</div>
+          <div data-hf-id="hf-rsb8" id="b10-title"><span data-hf-id="hf-rsbb" id="b10-t1">How rheoStream works,</span><span data-hf-id="hf-rsb9" id="b10-t2" class="accent">by design.</span></div>
+          <div data-hf-id="hf-rsba" id="b10-foot">RHEO.STREAM · AGPL-3.0</div>
+        </div>
+      </div>
+
+      <script>
+        (() => {
+          const { el, text } = BP;
+          const tl = gsap.timeline({ paused: true });
+          const S = 148.04;
+          const K = BP.kit(tl, S, "X");
+          const R = (t) => K.R(t);
+          const W = (w, n) => R(VO.w("X", w, n));
+          const svg = K.$("b10-svg");
+
+          // the whole workspace, small: plate II's works in one box, with the lead still in it
+          const outer = el("g", {}, svg);
+          const vessel = el("g", {}, outer);
+          const box = el("rect", { class: "ln line-strong", x: 600, y: 200, width: 720, height: 320 }, vessel);
+          const mini = el("g", {}, vessel);
+          el("path", { class: "ln line", d: "M630 380V420H1290V380" }, mini);
+          el("rect", { class: "water", x: 632, y: 398, width: 656, height: 21 }, mini);
+          [660, 820, 980, 1140].forEach((x) => el("path", { class: "ln line", d: `M${x} 380V332L${x + 55} 300L${x + 110} 332V380` }, mini));
+          el("rect", { class: "ln thin line", x: 630, y: 450, width: 660, height: 34 }, mini);
+          el("path", { class: "ln line", d: "M1266 200V380M1284 200V380" }, mini);
+          const P = RS.dot(vessel);
+          // an audit row for every change
+          const strip = el("path", { class: "ln line", d: "M600 560H1320M600 592H1320" }, vessel);
+          const ticks = Array.from({ length: 28 }, (_, i) => el("path", { class: "ln line-strong", d: `M${616 + i * 25} 566V586` }, vessel));
+          const auditT = text("AN AUDIT ROW FOR EVERY CHANGE", { class: "lab sm", x: 960, y: 630, "text-anchor": "middle" }, svg);
+          // exported: one file, the same identifiers, a digest
+          const shell = el("rect", { class: "ln line-strong", x: 570, y: 170, width: 780, height: 450, rx: 26 }, vessel);
+          const fileT = text("ONE FILE", { class: "lab", x: 960, y: 150, "text-anchor": "middle" }, svg);
+          const idsT = text("THE SAME IDENTIFIERS · ITS DIGEST", { class: "lab sm", x: 960, y: 672, "text-anchor": "middle" }, svg);
+          // anywhere: it arrives waiting for you
+          const ground = el("path", { class: "ln line", d: "M1180 530H1790M1200 530l-20 24M1260 530l-20 24M1320 530l-20 24M1380 530l-20 24M1440 530l-20 24M1500 530l-20 24M1560 530l-20 24M1620 530l-20 24M1680 530l-20 24M1740 530l-20 24" }, svg);
+          const anyT = text("ANYWHERE", { class: "lab sm", x: 1485, y: 600, "text-anchor": "middle" }, svg);
+          const wait = RS.card(svg, 220, 250, 520, "IT ARRIVES WAITING FOR YOU", ["approvals: waiting for a person", "operations: waiting", "credentials: waiting"], { cls: "line-strong" });
+          const fires = RS.stampBox(svg, "FIRES NOTHING", 480, 520, 280, { ok: true, rot: -3 });
+
+          // the end card: one current, and the guide's own title
+          const esvg = K.$("b10-end-svg");
+          const stream = el("path", { class: "ln line-strong", d: "M120 640C420 600 620 680 960 640S1500 600 1800 640" }, esvg);
+          const E = RS.dot(esvg);
+
+          RS.put(K, tl, P, 700, 400, R(148.7), { fade: 0.4 });
+          K.fade(K.$("b10-lab-l"), R(148.9), 0.4);
+          K.fade(K.$("b10-lab-r"), R(148.9), 0.4);
+          K.stamp(box, R(148.6), { origin: "960 360", sound: "slide", from: 1.6, dur: 0.4 });
+          K.fade(mini, R(148.8), 0.5);
+          // "every change along the way left an audit record"
+          K.draw(strip, W("every") - 0.1, 0.5, "none");
+          ticks.forEach((t, i) => { K.fade(t, W("change") + i * 0.055, 0.08); if (i % 3 === 0) K.sfx("tick", W("change") + i * 0.055); });
+          K.typed(auditT, W("audit") - 0.2, { cps: 44, cursor: false });
+          // "export the workspace, and all of it travels as one file, with the same identifiers"
+          K.draw(shell, W("export") - 0.1, 0.8, "power1.inOut");
+          K.typed(fileT, W("one") - 0.1, { cps: 30, cursor: false });
+          K.sfx("stamp", W("file"));
+          K.typed(idsT, W("same") - 0.1, { cps: 48, cursor: false });
+          tl.to([auditT, fileT, idsT], { opacity: 0, duration: 0.3 }, W("travels") - 0.1);
+          K.move(vessel, W("travels"), 0.6, { scale: 1, svgOrigin: "960 395" }, { scale: 0.55, svgOrigin: "960 395" }, { ease: "power2.inOut" });
+          K.draw(ground, W("travels") + 0.4, 0.8, "none");
+          K.move(outer, W("travels") + 0.5, W("arrives") - W("travels") - 0.4, { x: 0, y: 0 }, { x: 525, y: -10 }, { ease: "power2.inOut", sound: "water" });
+          // "and arrives anywhere, waiting for you, firing nothing"
+          K.sfx("gate", W("arrives") + 0.1);
+          K.typed(anyT, W("anywhere") - 0.1, { cps: 34, cursor: false });
+          RS.showCard(K, wait, W("waiting") - 0.15, { cps: 56 });
+          K.stamp(fires.g, W("nothing") - 0.05, { origin: "480 520" });
+
+          // "your working life, in one current. rheoStream."
+          const endAt = W("your") - 0.25;
+          tl.to(K.$("b10-content"), { opacity: 0, duration: 0.5, ease: "power1.in" }, endAt);
+          K.sfx("out", endAt);
+          K.typed(K.$("b10-kick"), W("working") - 0.05, { cps: 46, cursor: false });
+          K.draw(stream, W("in") - 0.1, 1.1, "power1.inOut");
+          RS.put(K, tl, E, 120, 640, W("in"), { fade: 0.2 });
+          RS.ride(K, E, [[420, 618], [700, 652], [960, 640], [1240, 622], [1500, 626], [1800, 640]], W("in") + 0.05, { speed: 900, chime: true });
+          K.slam(K.$("b10-t1"), W("current") - 0.1, { stagger: 0.03 });
+          K.slam(K.$("b10-t2"), W("reostream") - 0.1, { stagger: 0.04 });
+          K.typed(K.$("b10-foot"), W("reostream") + 0.6, { cps: 30, cursor: false });
+          window.__timelines["b10"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
