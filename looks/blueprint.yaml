@@ -10,6 +10,14 @@ collection: clean-line
 order: 350
 clip: blueprint.mp4
 tall: false
+tags:
+  medium: [diagram, ink]
+  texture: [clean]
+  motion: [draw-on, on the beat]
+  mood: [technical]
+  colour: [dark ground, one accent]
+  engine: [canvas2d]
+  use: [music video, explainer, infographic]
 status: draft
 engine: canvas2d
 project: bobwiseman-travel-agent

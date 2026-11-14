@@ -9,6 +9,14 @@ group: code
 order: 520
 clip: charcoal.mp4
 tall: false
+tags:
+  medium: [dry media]
+  texture: [paper grain, hatching]
+  motion: [boil]
+  mood: [nostalgic]
+  colour: [monochrome]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-holiday-tavern

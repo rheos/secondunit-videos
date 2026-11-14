@@ -9,6 +9,15 @@ group: code
 order: 200
 clip: tarotdeck.mp4
 tall: false
+tags:
+  medium: [print]
+  texture: [misregister, paper grain]
+  era: [pre-1900]
+  motion: [puppet, on twos, moving camera]
+  mood: [ornate, nostalgic]
+  colour: [limited palette]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-satisfied-mind

@@ -7,6 +7,13 @@ group: code
 order: 10
 clip: pinball.mp4
 tall: false
+tags:
+  medium: [cartoon]
+  era: [1970-1999]
+  mood: [playful, nostalgic]
+  colour: [muted, one accent]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-we-got-time

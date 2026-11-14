@@ -7,6 +7,14 @@ group: code
 order: 140
 clip: neon.mp4
 tall: false
+tags:
+  medium: [light]
+  texture: [glow]
+  motion: [on the beat]
+  mood: [nostalgic]
+  colour: [dark ground, saturated]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-holiday-tavern

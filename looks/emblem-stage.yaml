@@ -10,6 +10,14 @@ group: code
 order: 460
 clip: emblem-stage.mp4
 tall: false
+tags:
+  medium: [engraving, cut paper, watercolour]
+  texture: [paper grain, hatching]
+  era: [pre-1900]
+  motion: [puppet, lip-sync]
+  mood: [ornate]
+  engine: [canvas2d, generated]
+  use: [music video]
 status: draft
 engine: canvas2d + generated cut-outs
 project: bobwiseman-all-the-trees

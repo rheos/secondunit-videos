@@ -7,6 +7,12 @@ group: live
 order: 80
 clip: hj-veil.mp4
 tall: true
+tags:
+  medium: [photo]
+  motion: [lip-sync]
+  mood: [dark]
+  engine: [gpt-image, minimax-h3]
+  use: [artist footage, music video]
 status: test
 engine: generated (GPT Image 2.5 still + MiniMax H3 Max lip-sync)
 project: hjeron-dark-blues-probe

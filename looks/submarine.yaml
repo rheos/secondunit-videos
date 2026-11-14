@@ -7,6 +7,13 @@ group: code
 order: 380
 clip: submarine.mp4
 tall: false
+tags:
+  medium: [print, cartoon]
+  era: [1945-1969]
+  mood: [psychedelic, playful]
+  colour: [saturated]
+  engine: [canvas2d]
+  use: [music video, lyric video]
 status: test
 engine: canvas2d
 project: bobwiseman-wgt-submarine

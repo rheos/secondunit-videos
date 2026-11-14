@@ -9,6 +9,12 @@ group: code
 order: 250
 clip: surveymap.mp4
 tall: false
+tags:
+  medium: [diagram]
+  texture: [paper grain, hatching]
+  mood: [technical]
+  engine: [canvas2d]
+  use: [infographic]
 status: rejected
 engine: canvas2d
 project: bobwiseman-you-dont-love-me

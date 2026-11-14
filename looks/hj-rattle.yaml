@@ -7,6 +7,12 @@ group: generated
 order: 60
 clip: hj-rattle.mp4
 tall: false
+tags:
+  medium: [type]
+  motion: [lip-sync, on the beat]
+  mood: [dark]
+  engine: [gpt-image, minimax-h3, p5]
+  use: [music video]
 status: rejected
 engine: generated + p5 (GPT Image 2.5, MiniMax H3 Max, Wan 2.7, composited in p5 with Swift VFX)
 project: hjeron-rattle-and-drum

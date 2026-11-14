@@ -10,6 +10,13 @@ collection: clean-line
 order: 300
 clip: outlinecartoon.mp4
 tall: false
+tags:
+  medium: [cartoon, flat vector]
+  texture: [halftone]
+  mood: [playful]
+  colour: [pastel]
+  engine: [hyperframes]
+  use: [explainer]
 status: test
 engine: hyperframes
 project: indieagent-clean-vector-test

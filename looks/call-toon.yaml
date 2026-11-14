@@ -10,6 +10,14 @@ collection: clean-line
 order: 370
 clip: call-toon.mp4
 tall: false
+tags:
+  medium: [cartoon, flat vector]
+  texture: [clean]
+  era: [contemporary]
+  motion: [lip-sync]
+  mood: [playful]
+  engine: [hyperframes]
+  use: [explainer]
 status: test
 engine: hyperframes
 project: indieagent-call-toon

@@ -9,6 +9,13 @@ group: code
 order: 660
 clip: null
 tall: false
+tags:
+  medium: [3d, ink]
+  texture: [clean]
+  motion: [moving camera, loop]
+  mood: [playful]
+  engine: [threejs]
+  use: [music video, canvas loop]
 status: test
 engine: three.js
 project: bobwiseman-10000-miles-perspective

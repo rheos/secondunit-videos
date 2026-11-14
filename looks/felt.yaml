@@ -7,6 +7,12 @@ group: generated
 order: 70
 clip: felt.mp4
 tall: false
+tags:
+  medium: [textile]
+  motion: [stop motion]
+  mood: [playful]
+  engine: [generated]
+  use: [explainer]
 status: approved
 engine: generated
 project: growoperative-explainers (rheos/growoperative-explainers)

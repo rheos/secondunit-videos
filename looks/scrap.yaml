@@ -10,6 +10,13 @@ group: code
 order: 580
 clip: scrap.mp4
 tall: true
+tags:
+  medium: [collage, cut paper, photo]
+  texture: [paper grain]
+  motion: [puppet]
+  mood: [dreamy]
+  engine: [canvas2d, midjourney]
+  use: [music video]
 status: test
 engine: canvas2d + generated (Midjourney fills)
 project: gemmaluna-clap-hands

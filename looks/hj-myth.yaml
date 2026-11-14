@@ -7,6 +7,12 @@ group: code
 order: 40
 clip: hj-myth.mp4
 tall: false
+tags:
+  medium: [paint, ink]
+  texture: [brushstroke, glow]
+  mood: [dark]
+  engine: [brushstroke]
+  use: [music video]
 status: rejected
 engine: brushstroke
 project: hjeron-painted-myth

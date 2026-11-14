@@ -9,6 +9,12 @@ group: code
 order: 640
 clip: chart-world.mp4
 tall: false
+tags:
+  medium: [diagram, ink]
+  texture: [clean]
+  mood: [deadpan, technical]
+  engine: [canvas2d]
+  use: [infographic, music video, explainer]
 status: test
 engine: canvas2d
 project: bobwiseman-10000-miles-chart

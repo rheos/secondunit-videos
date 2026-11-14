@@ -7,6 +7,12 @@ group: code
 order: 30
 clip: brushsheep.mp4
 tall: false
+tags:
+  medium: [paint]
+  texture: [brushstroke, glow]
+  mood: [dreamy]
+  engine: [brushstroke]
+  use: [music video]
 status: approved
 engine: brushstroke
 project: pnubb-mind-the-sheep-painted

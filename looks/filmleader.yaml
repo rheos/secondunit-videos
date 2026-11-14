@@ -9,6 +9,14 @@ group: code
 order: 240
 clip: filmleader.mp4
 tall: false
+tags:
+  medium: [type]
+  texture: [film grain]
+  era: [1945-1969]
+  mood: [nostalgic]
+  colour: [monochrome]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-giulietta-masina

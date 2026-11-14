@@ -9,6 +9,13 @@ group: code
 order: 530
 clip: surveyplate.mp4
 tall: false
+tags:
+  medium: [diagram, ink]
+  texture: [paper grain]
+  mood: [technical]
+  colour: [one accent]
+  engine: [hyperframes]
+  use: [explainer, infographic]
 status: approved
 engine: hyperframes
 project: indieagent-one-show, indieagent-gigcaravan, indieagent-viralvision

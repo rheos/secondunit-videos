@@ -7,6 +7,13 @@ group: generated
 order: 50
 clip: tarot.mp4
 tall: false
+tags:
+  medium: [engraving]
+  texture: [paper grain]
+  motion: [on the beat]
+  mood: [dark]
+  engine: [gpt-image, minimax-h3, p5]
+  use: [music video]
 status: rejected
 engine: generated + p5 (Soul 2 stills, GPT Image 2.5, MiniMax H3 Max, Wan 2.7, composited in p5)
 project: hjeron-quest-deck

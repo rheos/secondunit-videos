@@ -10,6 +10,12 @@ collection: clean-line
 order: 340
 clip: fieldguide.mp4
 tall: false
+tags:
+  medium: [ink]
+  texture: [paper grain, hatching]
+  mood: [deadpan]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-travel-agent

@@ -7,6 +7,13 @@ group: code
 order: 340
 clip: paint.mp4
 tall: false
+tags:
+  medium: [paint]
+  texture: [brushstroke, paper grain]
+  mood: [playful]
+  colour: [saturated]
+  engine: [brushstroke]
+  use: [music video]
 status: test
 engine: brushstroke
 project: bobwiseman-airplane-paint

@@ -7,6 +7,13 @@ group: code
 order: 90
 clip: woodcut.mp4
 tall: false
+tags:
+  medium: [print]
+  texture: [paper grain]
+  motion: [on twos]
+  colour: [one accent]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-airplane-woodcut, bobwiseman-airplane-v1, bobwiseman-me-and-jimi, bobwiseman-libelous

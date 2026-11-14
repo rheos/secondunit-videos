@@ -7,6 +7,12 @@ group: generated
 order: 10
 clip: collage.mp4
 tall: false
+tags:
+  medium: [collage]
+  motion: [morph, on the beat]
+  mood: [psychedelic, playful]
+  engine: [canvas2d, midjourney, minimax-h3]
+  use: [music video]
 status: test
 engine: generated + canvas2d
 project: bobwiseman-airplane-collage

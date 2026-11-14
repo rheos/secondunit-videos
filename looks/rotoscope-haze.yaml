@@ -9,6 +9,14 @@ group: code
 order: 470
 clip: rotoscope-haze.mp4
 tall: false
+tags:
+  medium: [paint]
+  texture: [film grain, misregister]
+  motion: [boil]
+  mood: [dreamy]
+  colour: [muted]
+  engine: [canvas2d, webgl]
+  use: [music video]
 status: test
 engine: canvas2d + webgl
 project: bobwiseman-real-thing

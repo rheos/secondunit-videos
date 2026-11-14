@@ -9,6 +9,11 @@ group: live
 order: 90
 clip: doodle-on-footage.mp4
 tall: true
+tags:
+  medium: [live action, ink, dry media]
+  mood: [playful]
+  engine: [canvas2d, live-action]
+  use: [artist footage, music video]
 status: test
 engine: canvas2d + mediapipe
 project: hjeron-doodle-on-footage

@@ -9,6 +9,13 @@ group: live
 order: 60
 clip: hj-sepia.mp4
 tall: true
+tags:
+  medium: [live action]
+  texture: [film grain]
+  mood: [nostalgic, dark]
+  colour: [sepia]
+  engine: [live-action]
+  use: [artist footage]
 status: approved
 engine: live action
 project: hjeron-dark-blues-storyboard

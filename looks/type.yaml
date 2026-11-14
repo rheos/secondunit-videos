@@ -7,6 +7,14 @@ group: code
 order: 320
 clip: type.mp4
 tall: false
+tags:
+  medium: [type]
+  texture: [glow]
+  motion: [on the beat]
+  mood: [deadpan]
+  colour: [dark ground, one accent]
+  engine: [canvas2d]
+  use: [lyric video, music video]
 status: approved
 engine: canvas2d
 project: bobwiseman-airplane-type, bobwiseman-airplane-v1

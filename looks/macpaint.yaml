@@ -9,6 +9,13 @@ group: code
 order: 410
 clip: macpaint.mp4
 tall: false
+tags:
+  medium: [pixel]
+  texture: [dither]
+  era: [1970-1999]
+  mood: [nostalgic]
+  engine: [canvas2d]
+  use: [music video]
 status: draft
 engine: canvas2d
 project: bobwiseman-travel-agent

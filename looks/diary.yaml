@@ -9,6 +9,13 @@ group: code
 order: 130
 clip: diary.mp4
 tall: false
+tags:
+  medium: [ink, cartoon]
+  texture: [paper grain]
+  motion: [draw-on, moving camera]
+  mood: [playful, nostalgic]
+  engine: [canvas2d]
+  use: [music video, lyric video]
 status: option
 engine: canvas2d
 project: bobwiseman-holiday-tavern

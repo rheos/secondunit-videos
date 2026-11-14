@@ -7,6 +7,15 @@ group: code
 order: 20
 clip: ministry.mp4
 tall: false
+tags:
+  medium: [ink]
+  texture: [paper grain, hatching, misregister]
+  era: [1900-1945]
+  motion: [boil, on twos]
+  mood: [deadpan]
+  colour: [muted, one accent]
+  engine: [canvas2d]
+  use: [music video]
 status: option
 engine: canvas2d
 project: bobwiseman-we-got-time

@@ -9,6 +9,13 @@ group: code
 order: 260
 clip: medical.mp4
 tall: false
+tags:
+  medium: [engraving, diagram]
+  texture: [hatching, paper grain]
+  era: [pre-1900]
+  mood: [technical, deadpan]
+  engine: [canvas2d]
+  use: [music video]
 status: rejected
 engine: canvas2d
 project: bobwiseman-you-dont-love-me

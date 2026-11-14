@@ -9,6 +9,14 @@ group: code
 order: 480
 clip: crisp-line.mp4
 tall: false
+tags:
+  medium: [cartoon, flat vector]
+  texture: [clean]
+  motion: [morph]
+  mood: [deadpan]
+  colour: [saturated]
+  engine: [canvas2d]
+  use: [music video]
 status: test
 engine: canvas2d
 project: bobwiseman-real-thing

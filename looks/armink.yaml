@@ -10,6 +10,12 @@ collection: clean-line
 order: 330
 clip: armink.mp4
 tall: false
+tags:
+  medium: [ink, dry media]
+  texture: [paper grain, misregister, hatching]
+  mood: [deadpan]
+  engine: [canvas2d]
+  use: [music video]
 status: option
 engine: canvas2d
 project: bobwiseman-travel-agent

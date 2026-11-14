@@ -9,6 +9,13 @@ group: code
 order: 180
 clip: engraving.mp4
 tall: false
+tags:
+  medium: [engraving]
+  texture: [hatching, paper grain]
+  mood: [ornate, deadpan]
+  colour: [one accent]
+  engine: [canvas2d, webgl]
+  use: [music video]
 status: approved
 engine: canvas2d + webgl
 project: bobwiseman-satisfied-mind

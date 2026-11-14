@@ -7,6 +7,14 @@ group: generated
 order: 30
 clip: gencartoon.mp4
 tall: false
+tags:
+  medium: [cartoon, print]
+  texture: [halftone, misregister]
+  era: [1945-1969]
+  motion: [lip-sync]
+  mood: [playful]
+  engine: [gpt-image, minimax-h3, p5]
+  use: [music video]
 status: test
 engine: generated + p5
 project: bobwiseman-airplane-on-the-highway

@@ -10,6 +10,12 @@ collection: clean-line
 order: 360
 clip: voxelloop.mp4
 tall: true
+tags:
+  medium: [pixel, 3d]
+  motion: [loop]
+  mood: [playful]
+  engine: [blender]
+  use: [canvas loop]
 status: approved
 engine: blender
 project: blender-orb-visualizer

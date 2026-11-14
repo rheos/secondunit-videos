@@ -9,6 +9,13 @@ group: code
 order: 365
 clip: null
 tall: false
+tags:
+  medium: [3d, ink, paint]
+  texture: [hatching]
+  motion: [on twos]
+  mood: [dreamy]
+  engine: [canvas2d]
+  use: [music video]
 status: approved
 engine: canvas2d
 project:

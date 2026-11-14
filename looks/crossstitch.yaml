@@ -9,6 +9,13 @@ group: code
 order: 190
 clip: crossstitch.mp4
 tall: false
+tags:
+  medium: [textile]
+  era: [pre-1900]
+  motion: [draw-on]
+  mood: [nostalgic, ornate]
+  engine: [canvas2d]
+  use: [music video, lyric video]
 status: approved
 engine: canvas2d
 project: bobwiseman-satisfied-mind
