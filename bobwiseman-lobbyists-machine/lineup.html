@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Lobbyists machine cast</title>
+<style>@font-face{font-family:KevinSans;src:url(fonts/KevinSans-Regular.woff2) format('woff2')}html,body{margin:0;background:#111}canvas{display:block}</style>
+</head><body><canvas id="c"></canvas>
+<script src="../tools/looseleaf-pen/looseleaf-pen.js"></script>
+<script src="js/pen.js"></script>
+<script src="js/cast.js"></script>
+<script>
+// Cast line-up plates for Robin's OK, at film scale (1 unit = 1 px at zoom 1). plate 1: the Rocker (before and after the frames),
+// the Publicist, the Cellist. plate 2: the zoo crew and the cardboard orchestra.
+window.drawPlate = (n, t = 0) => {
+  T = t; SEED = Math.floor(t * 12) + 1; paper();
+  const g = 690; ink([[20, g], [1260, g]], 'floor', { w: 1.6, col: PENCIL });
+  const name = (s, x) => label(s, x, 708, 20, INK);
+  if (n === 1) {
+    rocker(170, g, 1, { pose: 'play', face: 'grin', tag: 'a' }); name('the Rocker', 170);
+    rocker(470, g, 1, { pose: 'thumbs', glasses: 1, tag: 'b' }); name('...after the new frames', 470);
+    publicist(790, g, 1.12, { talk: 0.8, point: 1 }); name('the Publicist', 790);
+    cellist(1110, g, 1.12, { bow: 0.4 }); name('the Cellist', 1100);
+  } else if (n === 3) {
+    const nm = (s, x) => label(s, x, 708, 17, INK);
+    minder(240, g, 0.95, { flap: 0.5 }); nm('hired minder', 210);
+    shoveller(500, g, 0.95, { arms: 0.5 }); nm('the Shoveller', 500);
+    bellhop(720, g, 1.1); nm('bellhop', 720);
+    bust(880, g, 1.0); bust(1000, g, 1.0, { sniff: 1, tag: 'b' }); nm('heads of state', 940);
+    opinionHead(1110, g - 120, 1.0, { tag: 'a' }); opinionHead(1110, g - 30, 0.9, { tilt: 0.25, tag: 'b' }); jester(1210, g, 1, { price: '$1' }); nm('opinion, jester', 1160);
+  } else {
+    kid(130, g, 1.25, { kind: 'ice' }); kid(270, g, 1.25, { kind: 'balloon' }); name('kids at the zoo', 200);
+    giraffe(520, g, 1.05, { lean: 0.6 }); name('the giraffe', 520);
+    [['violin', 'VIOLINS'], ['tuba', 'TUBA'], ['flute', 'FLUTE'], ['drum', 'DRUM']].forEach(([i, nm], k) => cutout(820 + k * 120, g - 30, 1, { inst: i, name: nm }));
+    name('the National Arts Orchestra, cardboard', 1000);
+  }
+};
+window.setup = async () => { const c = document.getElementById('c'); c.width = W; c.height = H; X = c.getContext('2d'); await document.fonts.load('30px KevinSans'); };
+</script>
+</body></html>
