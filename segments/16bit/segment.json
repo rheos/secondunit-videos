@@ -1,0 +1,16 @@
+{
+  "slug": "16bit",
+  "title": "16-bit pixel art",
+  "kind": "code",
+  "summary": "A SNES-era racing game drawn at 320x180 in 46 colours, scaled up x4 with crisp pixels. Scene: a van races a coast road to a lighthouse.",
+  "duration_s": 15, "fps": 24, "size": [1280, 720], "audio": "none (a fixed 120 bpm grid)",
+  "requires": { "node": ">=20", "ffmpeg": true, "browser": "Google Chrome, or Playwright Chromium", "webgl2": true },
+  "optional": [],
+  "stand_ins": [],
+  "commands": { "install": "npm install", "check": "npm run check", "render": "npm run render", "preview": "npm run preview" },
+  "output": "out/16bit-segment_f00000-f00360_24fps_review-720p.mp4",
+  "edit": ["js/scene.js"],
+  "keep": ["js/px.js", "js/gl.js", "js/look.js", "js/vocab.js"],
+  "agent_notes": "AGENTS.md",
+  "source": { "repo": "rheos/secondunit-videos", "commit": "560a5a5" }
+}

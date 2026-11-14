@@ -4,10 +4,14 @@
   "type": "module",
   "description": "Quiver look segment: 16-bit pixel art, 15 seconds drawn in code.",
   "scripts": {
+    "check": "node check.mjs",
     "render": "node render.mjs",
     "preview": "node preview.mjs"
   },
   "devDependencies": {
     "playwright": "1.64.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

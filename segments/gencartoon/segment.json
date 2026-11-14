@@ -1,0 +1,21 @@
+{
+  "slug": "gencartoon",
+  "title": "Retro halftone cartoon",
+  "kind": "generated",
+  "summary": "A generated 1960s collage-cartoon character on chroma green, keyed over a generated plate that scrolls left. Scene: an ice-cream van on a coast road.",
+  "duration_s": 15, "fps": 24, "size": [1280, 720], "audio": "none (a fixed 120 bpm grid)",
+  "requires": { "node": ">=20", "ffmpeg": true, "browser": "Google Chrome, or Playwright Chromium", "webgl2": false },
+  "optional": [
+    { "what": "an image model, to make your own character and plate from prompts/", "cost": "free to a few cents an image, by tool",
+      "options": ["Codex's built-in image tool (on a ChatGPT plan)", "the OpenAI GPT Image API", "Higgsfield (GPT Image 2.5)", "any model that follows a long style prompt and paints on flat #00B140 green"] },
+    { "what": "a lip-sync video model, to replace the stand-in with a singing clip (prompts/03_clip.yml)", "cost": "paid: about 34 Higgsfield credits per 10 s for MiniMax H3 Max",
+      "options": ["MiniMax H3 Max in reference mode (Higgsfield or Fal)", "any lip-sync model that takes a still and a vocal and keeps a locked camera on green"] }
+  ],
+  "stand_ins": ["the character is a still animated in code (bob, squash, rock on the beat); it does not sing until a lip-sync clip replaces it"],
+  "commands": { "install": "npm install", "check": "npm run check", "render": "npm run render", "preview": "npm run preview" },
+  "output": "out/gencartoon-segment_f00000-f00360_24fps_review-720p.mp4",
+  "edit": ["js/composite.js (layout numbers at the top)", "assets/", "prompts/"],
+  "keep": ["the style bible in prompts/style.txt, pasted verbatim into every image prompt"],
+  "agent_notes": "AGENTS.md",
+  "source": { "repo": "rheos/secondunit-videos", "commit": "560a5a5" }
+}

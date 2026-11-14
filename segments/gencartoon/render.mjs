@@ -2,7 +2,8 @@
 //   npm install && npm run render            (or: node render.mjs [--workers 4] [--out file.mp4] [--t0 0 --t1 15])
 //   npm run preview                          (serves the folder; open the printed address to watch it loop)
 // Every frame is a pure function of t, so workers draw frames in any order. Needs ffmpeg on the PATH.
-// Uses the installed Google Chrome if there is one, else Playwright's own Chromium (npx playwright install chromium).
+// Uses the installed Google Chrome if there is one, else Playwright's own Chromium (npx playwright install chromium);
+// QUIVER_BROWSER=chromium forces the second.
 import { chromium } from 'playwright';
 import fs from 'fs'; import path from 'path'; import http from 'http'; import { execFileSync } from 'child_process'; import { fileURLToPath } from 'url';
 
@@ -21,7 +22,7 @@ await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
 const BASE = `http://127.0.0.1:${server.address().port}/`;
 
 async function launch() {
-  try { return await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] }); }
+  try { if (process.env.QUIVER_BROWSER === 'chromium') throw new Error('skip Chrome'); return await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] }); }
   catch (e) { console.log('no Google Chrome here; using Playwright Chromium (software WebGL)'); return chromium.launch({ headless: true, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] }); }
 }
 const b = await launch();
